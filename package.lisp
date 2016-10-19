@@ -1,5 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:cl-pjsip
-  (:use #:cl))
+  (:use #:cl #:cffi))
 
