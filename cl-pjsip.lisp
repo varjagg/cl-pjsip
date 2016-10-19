@@ -2,5 +2,8 @@
 
 (in-package #:cl-pjsip)
 
-;;; "cl-pjsip" goes here. Hacks and glory await!
+(define-foreign-library libpjsip
+  (:unix (:or "libpjsip.so.2" "libpjsip.so")))
+
+(use-foreign-library libpjsip)
 
