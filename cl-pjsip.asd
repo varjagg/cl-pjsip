@@ -1,0 +1,11 @@
+;;;; cl-pjsip.asd
+
+(asdf:defsystem #:cl-pjsip
+  :description "Common Lisp wrapper for PJSIP library"
+  :author "Eugene Zaikonnikov <eugene@funcall.org>"
+  :license "BSD"
+  :depends-on (#:cffi)
+  :serial t
+  :components ((:file "package")
+               (:file "cl-pjsip")))
+
