@@ -3,7 +3,7 @@
 (asdf:defsystem #:cl-pjsip
   :description "Common Lisp wrapper for PJSIP library"
   :author "Eugene Zaikonnikov <eugene@funcall.org>"
-  :license "BSD"
+  :license "GPL v2"
   :depends-on (#:cffi)
   :serial t
   :components ((:file "package")
