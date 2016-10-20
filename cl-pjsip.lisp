@@ -149,6 +149,17 @@
 (defcfun "pjsip_endpt_register_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
 	 (module (:pointer (:struct pjsip-module))))
 
+(defcstruct pjsip-inv-callback
+  (on-state-changed :pointer)
+  (on-new-session :pointer)
+  (on-tsx-state-changed :pointer)
+  (on-rx-offer :pointer)
+  (on-rx-reinvite :pointer)
+  (on-create-offer :pointer)
+  (on-media-update :pointer)
+  (on-send-ack :pointer)
+  (on-redirected :pointer))
+
 ;;opaque type
 (defcstruct pjmedia-endpnt
   )
