@@ -167,3 +167,57 @@
 (defcfun "pjmedia_endpt_create" pj-status-t (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
 	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpnt))))
 
+(defcfun "pjmedia_codec_g711_init" pj-status-t (endpoint (:pointer (:struct pjmedia-endpnt))))
+
+(defcenum pjmedia-transport-type
+  :pjmedia-transport-type-udp
+  :pjmedia-transport-type-ice
+  :pjmedia-transport-type-srtp
+  :pjmedia-transport-type-user)
+
+(defcstruct pjmedia-transport-op
+  ;;callbackery
+  (get-info :pointer)
+  (attach :pointer)
+  (detach :pointer)
+  (send-rtp :pointer)
+  (send-rtcp :pointer)
+  (send-rtcp2 :pointer)
+  (media-create :pointer)
+  (encode-sdp :pointer)
+  (media-start :pointer)
+  (media-stop :pointer)
+  (simulate-lost :pointer)
+  (destroy :pointer))
+
+(defcstruct pjmedia-transport
+  (name :char :count 32)
+  (type pjmedia-transport-type)
+  (op (:pointer (:struct pjmedia-transport-op)))
+  (user-data (:pointer :void)))
+
+(defcfun "pjmedia_transport_udp_create3" pj-status-t (endpoint (:pointer (:struct pjmedia-endpnt))) (af :int) (name :string) (addr (:struct pj-str))
+	 (port :int) (options :uint) (p-tp (:pointer (:pointer (:struct pjmedia-transport)))))
+
+(defctype pj-sock :long)
+
+(defcstruct pjmedia-sock-info
+  (rtp-sock pj-sock)
+  (rtp-addr-name (:union pj-sockaddr))
+  (rtcp-sock pj-sock)
+  (rtcp-addr-name (:union pj-sockaddr)))
+
+(defcstruct pjmedia-transport-specific-info
+  (type pjmedia-transport-type)
+  (cbsize :int)
+  (buffer :char :count 144)) ;36 * sizeof(long)
+
+(defcstruct pjmedia-transport-info
+  (sock-info (:struct pjmedia-sock-info))
+  (src-rtp-name (:union pj-sockaddr))
+  (src-rtcp-name (:union pj-sockaddr))
+  (specific-info-cnt :uint)
+  (spc-info (:struct pjmedia-transport-specific-info) :count 4))
+
+(defcfun "pjmedia_transport_info_init" :void (info (:pointer (:struct pjmedia-transport-info))))
+
