@@ -122,7 +122,7 @@
 
 (defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size-t))
 
-(defcfun "pjsip_100rel_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+(defcfun "pjsip_100rel_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcstruct pj-str
   (ptr (:pointer :char))
