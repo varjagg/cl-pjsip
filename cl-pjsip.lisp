@@ -12,7 +12,25 @@
 (defcfun "pj_init" pj-status-t)
 (defcfun "pj_log_set_level" :void (log-level :int))
 (defcfun "pjlib_util_init" pj-status-t)
-(defcfun "pj_caching_pool_init" :void (caching-pool :pointer) (factory-default-policy :pointer) (flags :int))
+
+(defctype pj-size-t :uint)
+
+(defcstruct pj-pool-factory
+  (policy (:struct pj-pool-factory-policy))
+  )
+
+(defcstruct pj-caching-pool
+  (factory (:struct pj-pool-factory))
+  (capacity pj-size-t)
+  (max-capacity pj-size-t)
+  (used-count pj-size-t)
+  (used-size pj-size-t)
+  (peak-used-size pj-size-t)
+  (free-list pj-list :count 16)
+  (used-list pj-list)
+  (pool-buf :car :count (* 256 (/ 4 4))))
+
+(defcfun "pj_caching_pool_init" :void (cp (:pointer (:struct pj-caching-pool))) (factory-default-policy :pointer) (flags :int))
 (defcfun "pjsip_endpt_create" pj-status-t (factory :pointer) (endpt-name :string) (endpoint :pointer))
 
 (defcunion pj-in6-addr
