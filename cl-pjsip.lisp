@@ -149,4 +149,10 @@
 (defcfun "pjsip_endpt_register_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
 	 (module (:pointer (:struct pjsip-module))))
 
+;;opaque type
+(defcstruct pjmedia-endpnt
+  )
+
+(defcfun "pjmedia_endpt_create" pj-status-t (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
+	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpnt))))
 
