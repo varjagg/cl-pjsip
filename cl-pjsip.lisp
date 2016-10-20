@@ -101,7 +101,52 @@
 ;;forward decl again
 (defcstruct pjsip-transport)
 
-(defcfun "pjsip_udp_transport_start" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))) (local-addr (:pointer (:struct pj-sockaddr-in)))
+(defcfun "pjsip_udp_transport_start" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+	 (local-addr (:pointer (:struct pj-sockaddr-in)))
 	 (hostport (:pointer (:struct pjsip-host-port)))
 	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
+
+(defcfun "pjsip_udp_transport_start6" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+	 (local-addr (:pointer (:struct pj-sockaddr-in6)))
+	 (hostport (:pointer (:struct pjsip-host-port)))
+	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
+
+(defcfun "pjsip_tsx_layer_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))))
+
+(defcstruct pjsip-ua-init-param
+  ;; yet another callback stub
+  (on-dlg-forked :pointer))
+
+(defcfun "pjsip_ua_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))) 
+	 (prm (:pointer (:struct pjsip-ua-init-param))))
+
+(defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size-t))
+
+(defcfun "pjsip_100rel_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+
+(defcstruct pj-str
+  (ptr (:pointer :char))
+  (slen :long))
+
+(defcstruct pjsip-module
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (name (:struct pj-str))
+  (id :int)
+  (priority :int)
+  ;;callbackery..
+  (load :pointer)
+  (start :pointer)
+  (stop :pointer)
+  (unload :pointer)
+  (on-rx-request :pointer)
+  (on-rx-response :pointer)
+  (on-tx-request :pointer)
+  (on-tx-response :pointer)
+  (on-tsx-state :pointer))
+
+(defcfun "pjsip_endpt_register_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+	 (module (:pointer (:struct pjsip-module))))
+
 
