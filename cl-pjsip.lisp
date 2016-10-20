@@ -7,17 +7,33 @@
 
 (use-foreign-library libpjsip)
 
+(defctype size :unsigned-int)
 (defctype pj-status-t :int)
 
 (defcfun "pj_init" pj-status-t)
 (defcfun "pj_log_set_level" :void (log-level :int))
 (defcfun "pjlib_util_init" pj-status-t)
 
-(defctype pj-size-t :uint)
+(defctype pj-size-t size)
+
+(defcstruct pj-pool-factory-policy
+  ;;pjsip's own callbackery, we're not going to disturb this
+  (block-alloc :pointer)
+  (block-free :pointer)
+  (callback :pointer))
 
 (defcstruct pj-pool-factory
   (policy (:struct pj-pool-factory-policy))
-  )
+  ;;pjsip's own callbackery, we're not going to disturb this
+  (create-pool :pointer)
+  (release-pool :pointer)
+  (dump-status :pointer)
+  (on-block-alloc :pointer)
+  (on-block-free :pointer))
+
+(defcstruct pj-list
+  (prev (:pointer :void))
+  (next (:pointer :void)))
 
 (defcstruct pj-caching-pool
   (factory (:struct pj-pool-factory))
@@ -26,11 +42,12 @@
   (used-count pj-size-t)
   (used-size pj-size-t)
   (peak-used-size pj-size-t)
-  (free-list pj-list :count 16)
-  (used-list pj-list)
-  (pool-buf :car :count (* 256 (/ 4 4))))
+  (free-list (:struct pj-list) :count 16)
+  (used-list (:struct pj-list))
+  (pool-buf :char :count 256))
 
-(defcfun "pj_caching_pool_init" :void (cp (:pointer (:struct pj-caching-pool))) (factory-default-policy :pointer) (flags :int))
+(defcfun "pj_caching_pool_init" :void (cp (:pointer (:struct pj-caching-pool))) 
+	 (factory-default-policy (:pointer (:struct pj-pool-factory-policy))) (max-capacity size))
 (defcfun "pjsip_endpt_create" pj-status-t (factory :pointer) (endpt-name :string) (endpoint :pointer))
 
 (defcunion pj-in6-addr
