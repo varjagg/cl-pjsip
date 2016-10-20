@@ -41,12 +41,16 @@
   (sin-addr (:struct pj-in-addr))
   (sin-zero :char :count 8))
 
+(defcstruct pj-addr-hdr
+  (sa-zero-len :uint8)
+  (sa-family :uint8))
+
 (defcunion pj-sockaddr
   (addr (:struct pj-addr-hdr))
   (ipv4 (:struct pj-sockaddr-in))
   (ipv6 (:struct pj-sockaddr-in6)))
 
-(defcfun "pjsip_sockaddr_init" :void (family :int) (addr :pointer) (cp :pointer) (port :uint))
+(defcfun "pjsip_sockaddr_init" :void (family :int) (addr (:pointer (:union pj-sockaddr))) (cp :pointer) (port :uint))
 
 (defcstruct pjsip-host-port
   (host :string)
