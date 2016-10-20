@@ -8,11 +8,11 @@
 (use-foreign-library libpjsip)
 
 (defctype size :unsigned-int)
-(defctype pj-status-t :int)
+(defctype pj-status :int)
 
-(defcfun "pj_init" pj-status-t)
+(defcfun "pj_init" pj-status)
 (defcfun "pj_log_set_level" :void (log-level :int))
-(defcfun "pjlib_util_init" pj-status-t)
+(defcfun "pjlib_util_init" pj-status)
 
 (defctype pj-size-t size)
 
@@ -54,7 +54,7 @@
 (defcstruct pjsip-endpoint
   )
 
-(defcfun "pjsip_endpt_create" pj-status-t (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
+(defcfun "pjsip_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
 	 (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcunion pj-in6-addr
@@ -101,28 +101,28 @@
 ;;forward decl again
 (defcstruct pjsip-transport)
 
-(defcfun "pjsip_udp_transport_start" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+(defcfun "pjsip_udp_transport_start" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
 	 (local-addr (:pointer (:struct pj-sockaddr-in)))
 	 (hostport (:pointer (:struct pjsip-host-port)))
 	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
 
-(defcfun "pjsip_udp_transport_start6" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+(defcfun "pjsip_udp_transport_start6" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
 	 (local-addr (:pointer (:struct pj-sockaddr-in6)))
 	 (hostport (:pointer (:struct pjsip-host-port)))
 	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
 
-(defcfun "pjsip_tsx_layer_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))))
+(defcfun "pjsip_tsx_layer_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcstruct pjsip-ua-init-param
   ;; yet another callback stub
   (on-dlg-forked :pointer))
 
-(defcfun "pjsip_ua_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))) 
+(defcfun "pjsip_ua_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))) 
 	 (prm (:pointer (:struct pjsip-ua-init-param))))
 
 (defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size-t))
 
-(defcfun "pjsip_100rel_init_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))))
+(defcfun "pjsip_100rel_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcstruct pj-str
   (ptr (:pointer :char))
@@ -146,7 +146,7 @@
   (on-tx-response :pointer)
   (on-tsx-state :pointer))
 
-(defcfun "pjsip_endpt_register_module" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint)))
+(defcfun "pjsip_endpt_register_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
 	 (module (:pointer (:struct pjsip-module))))
 
 (defcstruct pjsip-inv-callback
@@ -164,10 +164,10 @@
 (defcstruct pjmedia-endpnt
   )
 
-(defcfun "pjmedia_endpt_create" pj-status-t (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
+(defcfun "pjmedia_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
 	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpnt))))
 
-(defcfun "pjmedia_codec_g711_init" pj-status-t (endpoint (:pointer (:struct pjmedia-endpnt))))
+(defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer (:struct pjmedia-endpnt))))
 
 (defcenum pjmedia-transport-type
   :pjmedia-transport-type-udp
@@ -196,7 +196,7 @@
   (op (:pointer (:struct pjmedia-transport-op)))
   (user-data (:pointer :void)))
 
-(defcfun "pjmedia_transport_udp_create3" pj-status-t (endpoint (:pointer (:struct pjmedia-endpnt))) (af :int) (name :string) (addr (:struct pj-str))
+(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpnt))) (af :int) (name :string) (addr (:struct pj-str))
 	 (port :int) (options :uint) (p-tp (:pointer (:pointer (:struct pjmedia-transport)))))
 
 (defctype pj-sock :long)
@@ -221,3 +221,4 @@
 
 (defcfun "pjmedia_transport_info_init" :void (info (:pointer (:struct pjmedia-transport-info))))
 
+(defcfun "pjmedia-transport-get-info" pj-status (tp (:pointer (:struct pjmedia-transport))) (info (:pointer (:struct pjmedia-transport-info))))
