@@ -48,7 +48,14 @@
 
 (defcfun "pj_caching_pool_init" :void (cp (:pointer (:struct pj-caching-pool))) 
 	 (factory-default-policy (:pointer (:struct pj-pool-factory-policy))) (max-capacity size))
-(defcfun "pjsip_endpt_create" pj-status-t (factory :pointer) (endpt-name :string) (endpoint :pointer))
+
+
+;;only found as forward decl in sip_types.h
+(defcstruct pjsip-endpoint
+  )
+
+(defcfun "pjsip_endpt_create" pj-status-t (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
+	 (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcunion pj-in6-addr
   (s6-addr :uint8 :count 32)
@@ -91,6 +98,10 @@
   (host :string)
   (port :int))
 
-(defcfun "pjsip_udp_transport_start" pj-status-t (endpoint :pointer) (local-addressptr :pointer)
+;;forward decl again
+(defcstruct pjsip-transport)
+
+(defcfun "pjsip_udp_transport_start" pj-status-t (endpoint (:pointer (:struct pjsip-endpoint))) (local-addr (:pointer (:struct pj-sockaddr-in)))
 	 (hostport (:pointer (:struct pjsip-host-port)))
-	 (async-cnt :unit))
+	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
+
