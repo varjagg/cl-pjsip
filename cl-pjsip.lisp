@@ -128,11 +128,13 @@
   (ptr (:pointer :char))
   (slen :long))
 
+(defctype pj-str (:struct pj-str))
+
 (defcstruct pjsip-module
   ;;pj-list really via c macrology originally
   (prev (:pointer :void))
   (next (:pointer :void))
-  (name (:struct pj-str))
+  (name pj-str)
   (id :int)
   (priority :int)
   ;;callbackery..
@@ -196,7 +198,7 @@
   (op (:pointer (:struct pjmedia-transport-op)))
   (user-data (:pointer :void)))
 
-(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpnt))) (af :int) (name :string) (addr (:struct pj-str))
+(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpnt))) (af :int) (name :string) (addr pj-str)
 	 (port :int) (options :uint) (p-tp (:pointer (:pointer (:struct pjmedia-transport)))))
 
 (defctype pj-sock :long)
@@ -300,7 +302,7 @@
   (uri (:pointer (:struct pjsip-uri)))
   (q1000 :int)
   (code pjsip-status-code)
-  (reason (:struct pj-str)))
+  (reason pj-str))
 
 (defcstruct pjsip-target-set
   (head (:struct pjsip-target))
@@ -310,15 +312,15 @@
   ;;pj-list really via c macrology originally
   (prev (:pointer :void))
   (next (:pointer :void))
-  (name (:struct pj-str))
-  (value (:struct pj-str)))
+  (name pj-str)
+  (value pj-str))
 
 (defcstruct pjsip-fromto-hdr
   ;;pj-list really via c macrology originally
   (prev (:pointer :void))
   (next (:pointer :void))
   (uri (:pointer (:struct pjsip-uri)))
-  (tag (:struct pj-str))
+  (tag pj-str)
   (other-param (:struct pjsip-param)))
 
 (defctype pjsip-from-hdr (:struct pjsip-fromto-hdr))
@@ -336,7 +338,7 @@
 
 (defcstruct pjsip-dlg-party
   (info (:pointer (:struct pjsip-fromto-hdr)))
-  (info-str (:struct pj-str))
+  (info-str pj-str)
   (tag-hval :uint32)
   (contact (:pointer (:struct pjsip-contact-hdr)))
   (first-cseq :int32)
@@ -403,16 +405,69 @@
   (prev (:pointer :void))
   (next (:pointer :void))
   (type pjsip-hdr-e)
-  (name (:struct pj-str))
-  (sname (:struct pj-str))
+  (name pj-str)
+  (sname pj-str)
   (vptr :pointer))
 
+(defctype pjsip-hdr (:struct pjsip-hdr))
 (defctype pjsip-cid-hdr (:struct pjsip-hdr))
 (defctype pjsip-route-hdr (:struct pjsip-hdr))
 
+(defcstruct pjsip-common-challenge
+  (realm pj-str)
+  (other-param (:struct pjsip-param)))
+
+(defcstruct pjsip-digest-challenge
+  (realm pj-str)
+  (other-param (:struct pjsip-param))
+  (domain pj-str)
+  (nonce pj-str)
+  (opaque pj-str)
+  (stale :int)
+  (algorithm pj-str)
+  (qop pj-str))
+
+(defcstruct pjsip-pgp-challenge
+  (realm pj-str)
+  (other-param (:struct pjsip-param))
+  (version pj-str)
+  (micalgorithm pj-str)
+  (pubalgorithm pj-str)
+  (nonce pj-str))
+
+(defcunion u-challenge
+  (common (:struct pjsip-common-challenge))
+  (digest (:struct pjsip-digest-challenge))
+  (pgp (:struct pjsip-pgp-challenge)))
+
+(defcstruct pjsip-www-authenticate-hdr
+  (decl-stub pjsip-hdr)
+  (scheme pj-str)
+  (challenge (:union u-challenge)))
+
 (defcstruct pjsip-auth-clt-pref
   (initial-auth pj-bool)
-  (algorithm (:struct pj-str)))
+  (algorithm pj-str))
+
+(defcenum pjsip-auth-qop-type
+  :pjsip-auth-qop-none
+  :pjsip-auth-qop-auth
+  :pjsip-auth-qop-auth-int
+  :pjsip-auth-qop-unknown)
+
+(defcstruct pjsip-cached-auth
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (pool (:pointer (:struct pj-pool)))
+  (realm pj-str)
+  (is-proxy pj-bool)
+  (qop-value pjsip-auth-qop-type)
+  (nc :uint32) ;PJSIP_AUTH_QOP_SUPPORT = 1
+  (cnonce pj-str) ;PJSIP_AUTH_QOP_SUPPORT = 1
+  (last-chal (:pointer (:struct pjsip-www-authenticate-hdr)))
+  #+nil(cached-hdr (:struct pjsip-cached-auth-hdr)) ;no caching support, as it defaults to none in pjsip, but be careful
+  )
 
 (defcstruct pjsip-auth-clt-sess
   (pool (:pointer (:struct pj-pool)))
@@ -421,6 +476,27 @@
   (cred-cnt :uint)
   (cred-info :pointer)
   (cached-auth (:struct pjsip-cached-auth)))
+
+(defcenum pjsip-role-e
+  (:pjsip-role-uac 0)
+  :pjsip-role-uas
+  ;;aliases to above
+  (:pjsip-uac-role 0)
+  :pjsip-uas-role)
+
+(defcenum pjsip-tpselector-type
+  :pjsip-tpselector-none
+  :pjsip-tpselector-transport
+  :pjsip-tpselector-listener)
+
+(defcunion selector-u
+  (transport :pointer)
+  (listener :pointer)
+  (ptr :pointer))
+
+(defcstruct pjsip-tpselector
+  (type pjsip-tpselector-type)
+  (u (:union selector-u)))
 
 (defcstruct pjsip-dialog
   ;;pj-list really via c macrology originally
@@ -439,7 +515,7 @@
   (local (:struct pjsip-dlg-party))
   (remote (:struct pjsip-dlg-party))
   (rem-cap-hdr (:struct pjsip-hdr))
-  (role (:struct pjsip-role-e))
+  (role pjsip-role-e)
   (uac-has-2xx pj-bool)
   (secure pj-bool)
   (add-allow pj-bool)
@@ -456,6 +532,6 @@
   (via-addr (:struct pjsip-host-port))
   (via-tp :pointer))
 
-(defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer (:struct pj-str)))
-	 (local-contact (:pointer (:struct pj-str))) (remote-uri (:pointer (:struct pj-str))) (target (:pointer (:struct pj-str)))
+(defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
+	 (local-contact (:pointer pj-str)) (remote-uri (:pointer pj-str)) (target (:pointer pj-str))
 	 (p-dlg (:pointer (:pointer (:struct pjsip-dialog)))))
