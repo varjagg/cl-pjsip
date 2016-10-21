@@ -69,8 +69,8 @@
   (transport-mgr :pointer) ;dangling
   (ioqueue :pointer) ;dangling
   (ioq-last-err pj-status)
-  (resolver :pointer)
-  (mod-mutex :pointer)
+  (resolver :pointer) ;dangling
+  (mod-mutex :pointer) ;dangling
   (modules (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
   (module-list (:struct pjsip-module))
   (cap-hdr (:struct pjsip-hdr))
@@ -684,10 +684,18 @@
   (sec :long)
   (msec :long))
 
-(defcfun "pjsip_endpt_handle_events" :void (endpt (:pointer (:struct pjsip-endpoint))) (max-timeout (:pointer (:struct pj-time-val))))
+(defcfun "pjsip_endpt_handle_events" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (max-timeout (:pointer (:struct pj-time-val))))
 
 (defcstruct pjmedia-stream
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
 
 (defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
+
+(defcfun "pjmedia_transport_close" pj-status (transport (:pointer (:struct pjmedia-transport))))
+
+(defcfun "pjmedia_endpt_destroy" pj-status (endpt (:pointer (:struct pjmedia-endpt))))
+
+(defcfun "pjsip_endpt_destroy" pj-status (endpt (:pointer (:struct pjsip-endpoint))))
+
+(defcfun "pj_pool_release" :void (pool (:pointer (:struct pj-pool))))
