@@ -694,9 +694,41 @@
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
 
+(defcenum pjmedia-sdp-neg-state
+  :pjmedia-sdp-neg-state-null
+  :pjmedia-sdp-neg-state-local-offer
+  :pjmedia-sdp-neg-state-remote-offer
+  :pjmedia-sdp-neg-state-wait-nego
+  :pjmedia-sdp-neg-state-done)
+
+(defcstruct pjmedia-sdp-neg
+  (state pjmedia-sdp-neg-state)
+  (prefer-remote-codec-order pj-bool)
+  (answer-with-multiple-codecs pj-bool)
+  (has-remote-answer pj-bool)
+  (answer-was-remote pj-bool)
+  (initial-sdp (:pointer (:struct pjmedia-sdp-session)))
+  (initial-sdp-tmp (:pointer (:struct pjmedia-sdp-session)))
+  (active-local-sdp (:pointer (:struct pjmedia-sdp-session)))
+  (active-remote-sdp (:pointer (:struct pjmedia-sdp-session)))
+  (neg-local-sdp (:pointer (:struct pjmedia-sdp-session)))
+  (neg-remote-sdp (:pointer (:struct pjmedia-sdp-session))))
+
+(defcfun "pjmedia_sdp_neg_get_active_local" pj-status (neg (:pointer (:struct pjmedia-sdp-neg)))
+	 (local (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjmedia_sdp_neg_get_active_remote" pj-status (neg (:pointer (:struct pjmedia-sdp-neg)))
+	 (remote (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjmedia_stream_info_from_sdp" pj-status (info (:pointer (:struct pjmedia-stream-info))) (pool (:pointer (:struct pj-pool)))
+	 (endpt (:pointer (:struct pjmedia-endpt))) (local (:pointer (:struct pjmedia-sdp-session)))
+	 (remote (:pointer (:struct pjmedia-sdp-session))) (stream-idx :uint))
+
 (defcfun "pjmedia_stream_create" pj-status (endpt (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
 	 (info (:pointer (:struct pjmedia-stream-info))) (tp (:pointer (:struct pjmedia-transport)))
 	 (user-data (:pointer :void)) (p-stream (:pointer (:pointer (:struct pjmedia-stream)))))
+
+(defcfun "pjmedia_stream_start" pj-status (stream (:pointer (:struct pjmedia-stream))))
 
 (defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
 
