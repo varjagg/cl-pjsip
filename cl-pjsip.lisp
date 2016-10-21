@@ -568,3 +568,41 @@
 (defcfun "pjmedia_endpt_create_sdp" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
 	 (stream-cnt :uint) (sock-info (:pointer (:struct pjmedia-sock-info))) (p-sdp (:pointer (:pointer (:struct pjmedia-sdp-session)))))
 
+(defcenum pjsip-inv-state
+    :pjsip_inv_state_null	
+    :pjsip_inv_state_calling	
+    :pjsip_inv_state_incoming	
+    :pjsip_inv_state_early	
+    :pjsip_inv_state_connecting	
+    :pjsip_inv_state_confirmed	
+    :pjsip_inv_state_disconnected)
+
+(defcstruct pjsip-inv-session
+  (obj-name :char :count 32) ;PJ_MAX_OBJECT_NAME
+  (pool (:pointer (:struct pj-pool)))
+  (pool-prov (:pointer (:struct pj-pool)))
+  (pool-active (:pointer (:struct pj-pool)))
+  (state pjsip-inv-state)
+  (cancelling pj-bool)
+  (pending-cancel pj-bool)
+  (pending-bye :pointer) ;dangling def
+  (cause pjsip-status-code)
+  (cause-next pj-str)
+  (notify pj-bool)
+  (cb-called :uint)
+  (dlg (:pointer (:struct pjsip-dialog)))
+  (role pjsip-role-e)
+  (options :uint)
+  (neg :pointer) ;dangling
+  (sdp-neg-flags :uint)
+  (invite-tsx :pointer) ;dangling
+  (invite-req :pointer) ;dangling
+  (last-answer :pointer) ;dangling
+  (last-ack :pointer) ;dangling
+  (last-ack-cseq :int32)
+  (mod-data :pointer :count 32) ;PJSIP_MAX_MODULE
+  (timer :pointer) ;dangling
+  (following-fork pj-bool))
+
+(defcfun "pjsip_inv_create_uac" pj-status (dlg (:pointer (:struct pjsip-dialog))) (local-sdp (:pointer (:struct pjmedia-sdp-session)))
+	 (options :uint) (p-inv (:pointer (:pointer (:struct pjsip-inv-session)))))
