@@ -52,7 +52,8 @@
 
 ;;only found as forward decl in sip_types.h
 (defcstruct pjsip-endpoint
-  )
+  ;;ugly stub for mysterious struct
+  (pad :char :count 4096)))
 
 (defcfun "pjsip_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
 	 (endpoint (:pointer (:struct pjsip-endpoint))))
@@ -137,7 +138,7 @@
   (name pj-str)
   (id :int)
   (priority :int)
-  ;;callbackery..
+  ;;callbackery.. dangling
   (load :pointer)
   (start :pointer)
   (stop :pointer)
@@ -151,7 +152,7 @@
 (defcfun "pjsip_endpt_register_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
 	 (module (:pointer (:struct pjsip-module))))
 
-(defcstruct pjsip-inv-callback
+(defcstruct pjsip-inv-callback ;all callbacks are dangling defs..
   (on-state-changed :pointer)
   (on-new-session :pointer)
   (on-tsx-state-changed :pointer)
@@ -162,9 +163,64 @@
   (on-send-ack :pointer)
   (on-redirected :pointer))
 
-;;opaque type
+(defcstruct pjmedia-codec-factory
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (factory-data (:pointer :void))
+  (op :pointer)) ;dangling
+
+(defcenum pjmedia-codec-priority
+  (:pjmedia-codec-prio-highest 255)
+  (:pjmedia-codec-prio-next-higher 254)
+  (:pjmedia-codec-prio-normal 128)
+  (:pjmedia-codec-prio-lowest 1)
+  (:pjmedia-codec-prio-disabled 0))
+
+(defcenum pjmedia-type
+    :pjmedia-type-none
+    :pjmedia-type-audio
+    :pjmedia-type-video
+    :pjmedia-type-application
+    :pjmedia-type-unknown)
+
+(defcstruct pjmedia-codec-info
+  (type pjmedia-type)
+  (pt :uint)
+  (encoding-name pj-str)
+  (clock-rate :uint)
+  (channel-cnt :uint))
+
+(defcstruct pjmedia-codec-desc
+  (info (:struct pjmedia-codec-info))
+  (id :char :count 32)
+  (prio pjmedia-codec-priority)
+  (factory (:pointer (:struct pjmedia-codec-factory)))
+  (param :pointer)) ;dangling
+
+(defcstruct pjmedia-codec-mgr
+  (pf (:pointer (:struct pj-pool-factory)))
+  (pool (:pointer (:struct pj-pool)))
+  (mutex :pointer) ;dangling
+  (factory-list (:struct pjmedia-codec-factory))
+  (codec-cnt :uint)
+  (codec-desc (:struct pjmedia-codec-desc) :count 32))) ;PJMEDIA_CODEC_MGR_MAX_CODECS
+
+(defcstruct exit-cb
+  (list (:struct pj-list))
+  (func :pointer)) ;dangling
+
 (defcstruct pjmedia-endpt
-  )
+  (pool (:pointer (:struct pj-pool)))
+  (pf (:pointer (:struct pj-pool-factory)))
+  (codec-mgr (:pointer (:struct pjmedia-codec-mgr)))
+  (ioqueue :pointer) ;dangling
+  (own-ioqueue pj-bool)
+  (thread-cnt :uint)
+  (thread :pointer :count 2) ;max-threads
+  (quit-flag pj-bool)
+  (has-telephone-event pj-bool)
+  (exit-cb-ost (:struct exit-cb)))
 
 (defcfun "pjmedia_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
 	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpt))))
@@ -606,3 +662,19 @@
 
 (defcfun "pjsip_inv_create_uac" pj-status (dlg (:pointer (:struct pjsip-dialog))) (local-sdp (:pointer (:struct pjmedia-sdp-session)))
 	 (options :uint) (p-inv (:pointer (:pointer (:struct pjsip-inv-session)))))
+
+(defcfun "pjsip_inv_invite" pj-status (inv (:pointer (:struct pjsip-inv-session))) (p-tdata :pointer (:pointer)))
+
+(defcfun "pjsip_inv_send_msg" pj-status (inv (:pointer (:struct pjsip-inv-session))) (tdata :pointer))
+
+(defcstruct pj-time-val
+  (sec :long)
+  (msec :long))
+
+(defcfun "pjsip_endpt_handle_events" :void (endpt (:pointer (:struct pjsip-endpoint))) (max-timeout (:pointer (:struct pj-time-val))))
+
+(defcstruct pjmedia-stream
+  ;;ugly stub for messy struct with bunch of IFDEFs
+  (pad :char :count 4096))
+
+(defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
