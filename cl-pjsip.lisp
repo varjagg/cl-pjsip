@@ -234,64 +234,64 @@
   (vptr :pointer))
 
 (defcenum pjsip-status-code
-  (:pjsip_sc_trying  100)
-  (:pjsip_sc_ringing  180)
-  (:pjsip_sc_call_being_forwarded  181)
-  (:pjsip_sc_queued  182)
-  (:pjsip_sc_progress  183)
-  (:pjsip_sc_ok  200)
-  (:pjsip_sc_accepted  202)
-  (:pjsip_sc_multiple_choices  300)
-  (:pjsip_sc_moved_permanently  301)
-  (:pjsip_sc_moved_temporarily  302)
-  (:pjsip_sc_use_proxy  305)
-  (:pjsip_sc_alternative_service  380)
-  (:pjsip_sc_bad_request  400)
-  (:pjsip_sc_unauthorized  401)
-  (:pjsip_sc_payment_required  402)
-  (:pjsip_sc_forbidden  403)
-  (:pjsip_sc_not_found  404)
-  (:pjsip_sc_method_not_allowed  405)
-  (:pjsip_sc_not_acceptable  406)
-  (:pjsip_sc_proxy_authentication_required  407)
-  (:pjsip_sc_request_timeout  408)
-  (:pjsip_sc_gone  410)
-  (:pjsip_sc_request_entity_too_large  413)
-  (:pjsip_sc_request_uri_too_long  414)
-  (:pjsip_sc_unsupported_media_type  415)
-  (:pjsip_sc_unsupported_uri_scheme  416)
-  (:pjsip_sc_bad_extension  420)
-  (:pjsip_sc_extension_required  421)
-  (:pjsip_sc_session_timer_too_small  422)
-  (:pjsip_sc_interval_too_brief  423)
-  (:pjsip_sc_temporarily_unavailable  480)
-  (:pjsip_sc_call_tsx_does_not_exist  481)
-  (:pjsip_sc_loop_detected  482)
-  (:pjsip_sc_too_many_hops  483)
-  (:pjsip_sc_address_incomplete  484)
-  (:pjsip_ac_ambiguous  485)
-  (:pjsip_sc_busy_here  486)
-  (:pjsip_sc_request_terminated  487)
-  (:pjsip_sc_not_acceptable_here  488)
-  (:pjsip_sc_bad_event  489)
-  (:pjsip_sc_request_updated  490)
-  (:pjsip_sc_request_pending  491)
-  (:pjsip_sc_undecipherable  493)
-  (:pjsip_sc_internal_server_error  500)
-  (:pjsip_sc_not_implemented  501)
-  (:pjsip_sc_bad_gateway  502)
-  (:pjsip_sc_service_unavailable  503)
-  (:pjsip_sc_server_timeout  504)
-  (:pjsip_sc_version_not_supported  505)
-  (:pjsip_sc_message_too_large  513)
-  (:pjsip_sc_precondition_failure  580)
-  (:pjsip_sc_busy_everywhere  600)
-  (:pjsip_sc_decline  603)
-  (:pjsip_sc_does_not_exist_anywhere  604)
-  (:pjsip_sc_not_acceptable_anywhere  606)
-  (:pjsip_sc_tsx_timeout 408)		 ;pjsip_sc_request_timeout
-  (:pjsip_sc_tsx_transport_error  503)	 ;pjsip_sc_service_unavailable
-  (:pjsip_sc__force_32bit  #x7fffffff))
+  (:pjsip_sc_trying 100)
+  (:pjsip_sc_ringing 180)
+  (:pjsip_sc_call_being_forwarded 181)
+  (:pjsip_sc_queued 182)
+  (:pjsip_sc_progress 183)
+  (:pjsip_sc_ok 200)
+  (:pjsip_sc_accepted 202)
+  (:pjsip_sc_multiple_choices 300)
+  (:pjsip_sc_moved_permanently 301)
+  (:pjsip_sc_moved_temporarily 302)
+  (:pjsip_sc_use_proxy 305)
+  (:pjsip_sc_alternative_service 380)
+  (:pjsip_sc_bad_request 400)
+  (:pjsip_sc_unauthorized 401)
+  (:pjsip_sc_payment_required 402)
+  (:pjsip_sc_forbidden 403)
+  (:pjsip_sc_not_found 404)
+  (:pjsip_sc_method_not_allowed 405)
+  (:pjsip_sc_not_acceptable 406)
+  (:pjsip_sc_proxy_authentication_required 407)
+  (:pjsip_sc_request_timeout 408)
+  (:pjsip_sc_gone 410)
+  (:pjsip_sc_request_entity_too_large 413)
+  (:pjsip_sc_request_uri_too_long 414)
+  (:pjsip_sc_unsupported_media_type 415)
+  (:pjsip_sc_unsupported_uri_scheme 416)
+  (:pjsip_sc_bad_extension 420)
+  (:pjsip_sc_extension_required 421)
+  (:pjsip_sc_session_timer_too_small 422)
+  (:pjsip_sc_interval_too_brief 423)
+  (:pjsip_sc_temporarily_unavailable 480)
+  (:pjsip_sc_call_tsx_does_not_exist 481)
+  (:pjsip_sc_loop_detected 482)
+  (:pjsip_sc_too_many_hops 483)
+  (:pjsip_sc_address_incomplete 484)
+  (:pjsip_ac_ambiguous 485)
+  (:pjsip_sc_busy_here 486)
+  (:pjsip_sc_request_terminated 487)
+  (:pjsip_sc_not_acceptable_here 488)
+  (:pjsip_sc_bad_event 489)
+  (:pjsip_sc_request_updated 490)
+  (:pjsip_sc_request_pending 491)
+  (:pjsip_sc_undecipherable 493)
+  (:pjsip_sc_internal_server_error 500)
+  (:pjsip_sc_not_implemented 501)
+  (:pjsip_sc_bad_gateway 502)
+  (:pjsip_sc_service_unavailable 503)
+  (:pjsip_sc_server_timeout 504)
+  (:pjsip_sc_version_not_supported 505)
+  (:pjsip_sc_message_too_large 513)
+  (:pjsip_sc_precondition_failure 580)
+  (:pjsip_sc_busy_everywhere 600)
+  (:pjsip_sc_decline 603)
+  (:pjsip_sc_does_not_exist_anywhere 604)
+  (:pjsip_sc_not_acceptable_anywhere 606)
+  (:pjsip_sc_tsx_timeout 408)		;pjsip_sc_request_timeout
+  (:pjsip_sc_tsx_transport_error 503)	;pjsip_sc_service_unavailable
+  (:pjsip_sc__force_32bit #x7fffffff))
 
 (defcstruct pjsip-target
   ;;pj-list really via c macrology originally
@@ -299,11 +299,128 @@
   (next (:pointer :void))
   (uri (:pointer (:struct pjsip-uri)))
   (q1000 :int)
-  (code (:ennum pjsip-status-code)))
+  (code pjsip-status-code)
+  (reason (:struct pj-str)))
 
 (defcstruct pjsip-target-set
   (head (:struct pjsip-target))
   (current (:pointer (:struct pjsip-target))))
+
+(defcstruct pjsip-param
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (name (:struct pj-str))
+  (value (:struct pj-str)))
+
+(defcstruct pjsip-fromto-hdr
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (uri (:pointer (:struct pjsip-uri)))
+  (tag (:struct pj-str))
+  (other-param (:struct pjsip-param)))
+
+(defctype pjsip-from-hdr (:struct pjsip-fromto-hdr))
+(defctype pjsip-to-hdr (:struct pjsip-fromto-hdr))
+
+(defcstruct pjsip-contact-hdr
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (star :int)
+  (uri (:pointer (:struct pjsip-uri)))
+  (q1000 :int)
+  (expires :int32)
+  (other-param (:struct pjsip-param)))
+
+(defcstruct pjsip-dlg-party
+  (info (:pointer (:struct pjsip-fromto-hdr)))
+  (info-str (:struct pj-str))
+  (tag-hval :uint32)
+  (contact (:pointer (:struct pjsip-contact-hdr)))
+  (first-cseq :int32)
+  (cseq :int32))
+
+(defcstruct pj-pool-mem
+  (next :pointer))
+
+(defcstruct pj-pool
+  (first-mem (:pointer (:struct pj-pool-mem)))
+  (factory (:pointer (:struct pj-pool-factory)))
+  (obj-name :char :count 32)
+  (cb :pointer)) ; callback
+
+(defcenum pjsip-hdr-e
+  :pjsip_h_accept
+  :pjsip_h_accept_encoding_unimp	
+  :pjsip_h_accept_language_unimp	
+  :pjsip_h_alert_info_unimp		
+  :pjsip_h_allow
+  :pjsip_h_authentication_info_unimp	
+  :pjsip_h_authorization
+  :pjsip_h_call_id
+  :pjsip_h_call_info_unimp		
+  :pjsip_h_contact
+  :pjsip_h_content_disposition_unimp	
+  :pjsip_h_content_encoding_unimp	
+  :pjsip_h_content_language_unimp	
+  :pjsip_h_content_length
+  :pjsip_h_content_type
+  :pjsip_h_cseq
+  :pjsip_h_date_unimp			
+  :pjsip_h_error_info_unimp		
+  :pjsip_h_expires
+  :pjsip_h_from
+  :pjsip_h_in_reply_to_unimp		
+  :pjsip_h_max_forwards
+  :pjsip_h_mime_version_unimp		
+  :pjsip_h_min_expires
+  :pjsip_h_organization_unimp		
+  :pjsip_h_priority_unimp		
+  :pjsip_h_proxy_authenticate
+  :pjsip_h_proxy_authorization
+  :pjsip_h_proxy_require_unimp	
+  :pjsip_h_record_route
+  :pjsip_h_reply_to_unimp		
+  :pjsip_h_require
+  :pjsip_h_retry_after
+  :pjsip_h_route
+  :pjsip_h_server_unimp		
+  :pjsip_h_subject_unimp		
+  :pjsip_h_supported
+  :pjsip_h_timestamp_unimp		
+  :pjsip_h_to
+  :pjsip_h_unsupported
+  :pjsip_h_user_agent_unimp		
+  :pjsip_h_via
+  :pjsip_h_warning_unimp		
+  :pjsip_h_www_authenticate
+  :pjsip_h_other)
+
+(defcstruct pjsip-hdr
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (type pjsip-hdr-e)
+  (name (:struct pj-str))
+  (sname (:struct pj-str))
+  (vptr :pointer))
+
+(defctype pjsip-cid-hdr (:struct pjsip-hdr))
+(defctype pjsip-route-hdr (:struct pjsip-hdr))
+
+(defcstruct pjsip-auth-clt-pref
+  (initial-auth pj-bool)
+  (algorithm (:struct pj-str)))
+
+(defcstruct pjsip-auth-clt-sess
+  (pool (:pointer (:struct pj-pool)))
+  (endpt (:pointer (:struct pjsip-endpoint)))
+  (pref (:struct pjsip-auth-clt-pref))
+  (cred-cnt :uint)
+  (cred-info :pointer)
+  (cached-auth (:struct pjsip-cached-auth)))
 
 (defcstruct pjsip-dialog
   ;;pj-list really via c macrology originally
@@ -315,7 +432,7 @@
   (ua (:pointer pjsip-user-agent))
   (endpt (:pointer (:struct pjsip-endpoint)))
   (dlg-set (:pointer :void))
-  (state (:enum pjsip-dialog-state))
+  (state pjsip-dialog-state)
   (target (:pointer (:struct pjsip-uri)))
   (target-set (:struct pjsip-target-set))
   (inv-hdr (:struct pjsip-hdr))
@@ -323,7 +440,21 @@
   (remote (:struct pjsip-dlg-party))
   (rem-cap-hdr (:struct pjsip-hdr))
   (role (:struct pjsip-role-e))
-  (uac-has-2xx pj-bool))
+  (uac-has-2xx pj-bool)
+  (secure pj-bool)
+  (add-allow pj-bool)
+  (call-cid (:pointer pjsip-cid-hdr))
+  (route-set pjsip-route-hdr)
+  (route-set-frozen pj-bool)
+  (auth-sess (:struct pjsip-auth-clt-sess))
+  (sess-count :int)
+  (tsx-count :int)
+  (tpsel (:struct pjsip-tpselector))
+  (usage-cnt :uint)
+  (usage (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
+  (mod-data :pointer :count 32)
+  (via-addr (:struct pjsip-host-port))
+  (via-tp :pointer))
 
 (defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer (:struct pj-str)))
 	 (local-contact (:pointer (:struct pj-str))) (remote-uri (:pointer (:struct pj-str))) (target (:pointer (:struct pj-str)))
