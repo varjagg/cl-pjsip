@@ -686,6 +686,106 @@
 
 (defcfun "pjsip_endpt_handle_events" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (max-timeout (:pointer (:struct pj-time-val))))
 
+(defcstruct pj-ioqueue-op-key
+  (internal (:pointer :void) :count 32)
+  (activesock-data (:pointer :void))
+  (user-data (:pointer :void)))
+
+(defcstruct pjsip-rx-data-op-key
+  (op-key (:struct pj-ioqueue-op-key))
+  (rdata :pointer)) ;;fwd decl to -rx-data
+
+(defcstruct rx-data-tp-info
+  (pool (:pointer (:struct pj-pool)))
+  (transport (:pointer (:struct pjsip-transport)))
+  (tp-data (:pointer :void))
+  (op-key (:struct pjsip-rx-data-op-key)))
+
+(defcstruct rx-data-pkt-info
+  (timestamp (:struct pj-time-val))
+  (packet :char :count 4000) ;PJSIP_MAX_PKT_LEN
+  (zero :uint32)
+  (len :long)
+  (src-addr (:union pj-sockaddr))
+  (src-addr-len :int)
+  (src-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
+  (src-port :int))
+
+(defcstruct pjsip-media-type
+  (type pj-str)
+  (subtype pj-str)
+  (param (:struct pjsip-param)))
+
+(defcstruct pjsip-msg-body
+  (content-type (:struct pjsip-media-type))
+  (data (:pointer :void))
+  (len :uint)
+  (print-body :pointer) ;dangling callback
+  (clone-data :pointer)) ;dangling callback
+
+(defcenum pjsip-msg-type-e
+  :pjsip-request-msg
+  :pjsip-response-msg)
+
+(defcenum pjsip-method-e
+  :pjsip_invite_method   
+  :pjsip_cancel_method 
+  :pjsip_ack_method	 
+  :pjsip_bye_method	 
+  :pjsip_register_method
+  :pjsip_options_method
+  :pjsip_other_method)
+
+(defcstruct pjsip-method
+  (id pjsip-method-e)
+  (name pj-str))
+
+(defcstruct pjsip-request-line
+  (method (:struct pjsip-method))
+  (uri (:pointer (:struct pjsip-uri))))
+
+(defcstruct pjsip-status-line
+  (code :int)
+  (reason pj-str))
+
+(defcunion msg-line
+  (req (:struct pjsip-request-line))
+  (status (:struct pjsip-status-line)))
+
+(defcstruct pjsip-msg
+  (type pjsip-msg-type-e)
+  (line (:union msg-line))
+  (hdr (:struct pjsip-hdr))
+  (body (:pointer (:struct pjsip-msg-body))))
+
+(defcstruct rx-data-msg-info
+  (msg-buf (:pointer :char))
+  (len :int)
+  (msg (:pointer (:struct pjsip-msg)))
+  (info (:pointer :char))
+  (cid (:pointer pjsip-cid-hdr))
+  (from (:pointer pjsip-from-hdr))
+  (to (:pointer pjsip-to-hdr))
+  (via (:pointer pjsip-via-hdr))
+  (cseq (:pointer pjsip-cseq-hdr))
+  (max-fwd (:pointer pjsip-max-fwd-hdr))
+  (route (:pointer pjsip-route-hdr))
+  (via (:pointer pjsip-via-hdr))
+  (via (:pointer pjsip-via-hdr))
+  (via (:pointer pjsip-via-hdr))
+  (via (:pointer pjsip-via-hdr))
+  (via (:pointer pjsip-via-hdr))
+  (via (:pointer pjsip-via-hdr)))
+
+(defcstruct pjsip-rx-data
+  (tp-info (:struct rx-data-tp-info))
+  (pkt-info (:struct rx-data-pkt-info))
+  (msg-info (:struct rx-data-msg-info))
+  (endpt-info (:struct rx-data-endpt-info)))
+
+(defcfun "pjsip_endpt_respond_stateless" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (rdata (:pointer (:struct pjsip-rx-data)))
+	 (st-code :int) (st-text (:pointer pj-str)) (hdr-list (:pointer (:struct pjsip-hdr))) (body (:pointer (:struct pjsip-msg-body))))
+
 (defcstruct pjmedia-stream
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
