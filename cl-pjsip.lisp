@@ -690,6 +690,14 @@
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
 
+(defcstruct pjmedia-stream-info
+  ;;ugly stub for messy struct with bunch of IFDEFs
+  (pad :char :count 4096))
+
+(defcfun "pjmedia_stream_create" pj-status (endpt (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
+	 (info (:pointer (:struct pjmedia-stream-info))) (tp (:pointer (:struct pjmedia-transport)))
+	 (user-data (:pointer :void)) (p-stream (:pointer (:pointer (:struct pjmedia-stream)))))
+
 (defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
 
 (defcfun "pjmedia_transport_close" pj-status (transport (:pointer (:struct pjmedia-transport))))
