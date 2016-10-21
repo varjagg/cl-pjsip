@@ -163,13 +163,13 @@
   (on-redirected :pointer))
 
 ;;opaque type
-(defcstruct pjmedia-endpnt
+(defcstruct pjmedia-endpt
   )
 
 (defcfun "pjmedia_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
-	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpnt))))
+	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpt))))
 
-(defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer (:struct pjmedia-endpnt))))
+(defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer (:struct pjmedia-endpt))))
 
 (defcenum pjmedia-transport-type
   :pjmedia-transport-type-udp
@@ -198,7 +198,7 @@
   (op (:pointer (:struct pjmedia-transport-op)))
   (user-data (:pointer :void)))
 
-(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpnt))) (af :int) (name :string) (addr pj-str)
+(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (af :int) (name :string) (addr pj-str)
 	 (port :int) (options :uint) (p-tp (:pointer (:pointer (:struct pjmedia-transport)))))
 
 (defctype pj-sock :long)
@@ -535,3 +535,36 @@
 (defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
 	 (local-contact (:pointer pj-str)) (remote-uri (:pointer pj-str)) (target (:pointer pj-str))
 	 (p-dlg (:pointer (:pointer (:struct pjsip-dialog)))))
+(defcstruct pjmedia-sock-info
+  (rtp-sock pj-sock)
+  (rtp-addr-name (:union pj-sockaddr))
+  (rtcp-sock pj-sock)
+  (rtcp-addr-name (:union pj-sockaddr)))
+
+(defcstruct sdp-session-origin
+  (user pj-str)
+  (id :uint32)
+  (version :uint32)
+  (net-type pj-str)
+  (addr-type pj-str)
+  (addr pj-str))
+
+(defcstruct sdp-session-time
+  (start :uint32)
+  (stop :uint32))
+
+(defcstruct pjmedia-sdp-session
+  (origin (:struct sdp-session-origin))
+  (name pj-str)
+  (conn :pointer) ;dangling pjmedia_sdp_conn def
+  (bandw-count :uint)
+  (bandw :pointer :count 4) ;dangling def
+  (time (:struct sdp-session-time))
+  (attr-count :uint)
+  (attr :pointer :count 68) ;dangling, 32*2 + 4
+  (media-count :uint)
+  (media :pointer :count 16)) ;dangling
+
+(defcfun "pjmedia_endpt_create_sdp" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
+	 (stream-cnt :uint) (sock-info (:pointer (:struct pjmedia-sock-info))) (p-sdp (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
