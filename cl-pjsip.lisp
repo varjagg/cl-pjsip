@@ -31,6 +31,15 @@
   (on-block-alloc :pointer)
   (on-block-free :pointer))
 
+(defcstruct pj-pool-mem
+  (next :pointer))
+
+(defcstruct pj-pool
+  (first-mem (:pointer (:struct pj-pool-mem)))
+  (factory (:pointer (:struct pj-pool-factory)))
+  (obj-name :char :count 32)
+  (cb :pointer)) ; callback
+
 (defcstruct pj-list
   (prev (:pointer :void))
   (next (:pointer :void)))
@@ -52,8 +61,21 @@
 
 ;;only found as forward decl in sip_types.h
 (defcstruct pjsip-endpoint
-  ;;ugly stub for mysterious struct
-  (pad :char :count 4096)))
+  (pool (:pointer (:struct pj-pool)))
+  (mutex :pointer) ;dangling
+  (pf (:pointer (:struct pj-pool-factory)))
+  (name pj-str)
+  (timer-heap :pointer) ;dangling
+  (transport-mgr :pointer) ;dangling
+  (ioqueue :pointer) ;dangling
+  (ioq-last-err pj-status)
+  (resolver :pointer)
+  (mod-mutex :pointer)
+  (modules (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
+  (module-list (:struct pjsip-module))
+  (cap-hdr (:struct pjsip-hdr))
+  (req-hdr (:struct pjsip-hdr))
+  (exit-cb-list (:struct exit-cb)))
 
 (defcfun "pjsip_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
 	 (endpoint (:pointer (:struct pjsip-endpoint))))
@@ -399,15 +421,6 @@
   (contact (:pointer (:struct pjsip-contact-hdr)))
   (first-cseq :int32)
   (cseq :int32))
-
-(defcstruct pj-pool-mem
-  (next :pointer))
-
-(defcstruct pj-pool
-  (first-mem (:pointer (:struct pj-pool-mem)))
-  (factory (:pointer (:struct pj-pool-factory)))
-  (obj-name :char :count 32)
-  (cb :pointer)) ; callback
 
 (defcenum pjsip-hdr-e
   :pjsip_h_accept
