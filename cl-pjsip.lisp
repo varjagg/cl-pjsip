@@ -907,3 +907,12 @@
 (defcfun "pjsip_endpt_destroy" pj-status (endpt (:pointer (:struct pjsip-endpoint))))
 
 (defcfun "pj_pool_release" :void (pool (:pointer (:struct pj-pool))))
+
+(defcfun "pjsip_get_status_text" (:pointer pj-str) (code :int))
+
+(defcfun "pjsip_inv_state_name" :string (state pjsip-inv-state))
+
+(defcfun "pjsip_inv_verify_request" pj-status (rdata (:pointer (:struct pjsip-rx-data))) (options :uint)
+	 (l-sdp (:pointer (:struct pjmedia-sdp-session))) (dlg (:pointer (:struct pjsip-dialog)))
+	 (endpt (:pointer (:struct pjsip-endpoint))) (:pointer (:pointer (:struct pjsip-tx-data))))
+
