@@ -28,6 +28,22 @@
 
 (defctype pj-size-t size)
 
+(defcstruct pj-str
+  (ptr (:pointer :char))
+  (slen :long))
+
+(defctype pj-str (:struct pj-str))
+
+;;translator for pj-str to lisp strings
+
+
+(defcenum pjsip-module-priority
+  (:pjsip-mod-priority-transport-layer 8)
+  (:pjsip-mod-priority-tsx-layer 16)
+  (:pjsip-mod-priority-ua-proxy-layer 32)
+  (:pjsip-mod-priority-dialog-usage 48)
+  (:pjsip-mod-priority-application 64))
+
 (defcstruct pj-pool-factory-policy
   ;;pjsip's own callbackery, we're not going to disturb this
   (block-alloc :pointer)
@@ -130,12 +146,6 @@
 (defcstruct pjsip-ua-init-param
   ;; yet another callback stub
   (on-dlg-forked :pointer))
-
-(defcstruct pj-str
-  (ptr (:pointer :char))
-  (slen :long))
-
-(defctype pj-str (:struct pj-str))
 
 (defcstruct pjsip-module
   ;;pj-list really via c macrology originally
