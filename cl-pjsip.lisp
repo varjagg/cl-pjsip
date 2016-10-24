@@ -43,8 +43,8 @@
     (setf slen (length string))
     (let ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding)))
       (multiple-value-bind (size end)
-          (funcall (cffi::octet-counter mapping) string 0 nil slen)
-        (funcall (cffi::encoder mapping) string 0 end ptr 0)))
+          (funcall (cffi::octet-counter mapping) string 0 nil (1- slen))
+        (funcall (cffi::encoder mapping) string 0 (1+ end) ptr 0)))
     pjstring))
 
 
