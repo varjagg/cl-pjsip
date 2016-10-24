@@ -480,7 +480,19 @@
 
 (defctype pjsip-hdr (:struct pjsip-hdr))
 (defctype pjsip-cid-hdr (:struct pjsip-hdr))
-(defctype pjsip-route-hdr (:struct pjsip-hdr))
+
+(defcstruct pjsip-name-addr
+  (vptr :pointer) ;dangling
+  (display pj-str)
+  (uri (:pointer (:struct pjsip-uri))))
+
+(defcstruct pjsip-routing-hdr
+  (hdr (:struct pjsip-hdr))
+  (name-addr (:struct pjsip-name-addr))
+  (other-param (:struct pjsip-param)))
+
+(defctype pjsip-route-hdr (:struct pjsip-routing-hdr))
+(defctype pjsip-rr-hdr (:struct pjsip-routing-hdr))
 
 (defcstruct pjsip-common-challenge
   (realm pj-str)
@@ -758,6 +770,59 @@
   (hdr (:struct pjsip-hdr))
   (body (:pointer (:struct pjsip-msg-body))))
 
+(defcstruct pjsip-generic-int-hdr
+  (hdr (:struct pjsip-hdr))
+  (ivalue :int32))
+
+(defctype pjsip-max-fwd-hdr (:struct pjsip-generic-int-hdr))
+
+(defcstruct pjsip-via-hdr
+  (hdr (:struct pjsip-hdr))
+  (transport pj-str)
+  (sent-by (:struct pjsip-host-port))
+  (ttl-param :int)
+  (rport-param :int)
+  (maddr-param pj-str)
+  (recvd-param pj-str)
+  (branch-param pj-str)
+  (other-param (:struct pjsip-param))
+  (comment pj-str))
+
+(defcstruct pjsip-cseq-hdr
+  (hdr (:struct pjsip-hdr))
+  (cseq :int32)
+  (method (:struct pjsip-method)))
+
+(defcstruct pjsip-ctype-hdr
+  (media (:struct pjsip-media-type)))
+
+(defctype pjsip-ctype-hdr (:struct pjsip-ctype-hdr))
+
+(defcstruct pjsip-clen-hdr
+  (len :int))
+
+(defctype pjsip-ctype-hdr (:struct pjsip-ctype-hdr))
+(defctype pjsip-clen-hdr (:struct pjsip-clen-hdr))
+(defctype pjsip-via-hdr (:struct pjsip-via-hdr))
+(defctype pjsip-cseq-hdr (:struct pjsip-cseq-hdr))
+
+(defcstruct pjsip-generic-array-hdr
+  (hdr (:struct pjsip-hdr))
+  (count :uint)
+  (values pj-str :count 32)) ;PJSIP_GENERIC_ARRAY_MAX_COUNT
+
+(defctype pjsip-generic-array-hdr (:struct pjsip-generic-array-hdr))
+
+(defctype pjsip-require-hdr (:struct pjsip-generic-array-hdr))
+(defctype pjsip-supported-hdr (:struct pjsip-generic-array-hdr))
+
+(defcstruct pjsip-parser-err-report
+  (list (:struct pj-list))
+  (except-code :int)
+  (line :int)
+  (col :int)
+  (hname pj-str))
+
 (defcstruct rx-data-msg-info
   (msg-buf (:pointer :char))
   (len :int)
@@ -770,12 +835,15 @@
   (cseq (:pointer pjsip-cseq-hdr))
   (max-fwd (:pointer pjsip-max-fwd-hdr))
   (route (:pointer pjsip-route-hdr))
-  (via (:pointer pjsip-via-hdr))
-  (via (:pointer pjsip-via-hdr))
-  (via (:pointer pjsip-via-hdr))
-  (via (:pointer pjsip-via-hdr))
-  (via (:pointer pjsip-via-hdr))
-  (via (:pointer pjsip-via-hdr)))
+  (record-route (:pointer pjsip-rr-hdr))
+  (ctype (:pointer pjsip-ctype-hdr))
+  (clen (:pointer pjsip-clen-hdr))
+  (require (:pointer pjsip-require-hdr))
+  (supported (:pointer pjsip-supported-hdr))
+  (parse-err (:pointer (:struct pjsip-parser-err-report))))
+
+(defcstruct rx-data-endpt-info
+  (mod-data (:pointer :void) :count 32)) ;PJSIP_MAX_MODULE
 
 (defcstruct pjsip-rx-data
   (tp-info (:struct rx-data-tp-info))
