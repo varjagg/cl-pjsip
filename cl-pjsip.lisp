@@ -34,17 +34,25 @@
 
 (defctype pj-str (:struct pj-str))
 
-(defun lisp-string-to-pj-str (string pjstring)
+(defun lisp-string-to-pj-str (string pjstring &key (encoding *default-foreign-encoding*))
   "Map Lisp strings to pj_str"
   (check-type string string)
   (with-foreign-slots ((ptr slen) pjstring pj-str)
     (setf slen (length string))
-    ))
+    (let ((mapping (lookup-mapping *foreign-string-mappings* encoding)))
+      (multiple-value-bind (size end)
+          (funcall (octet-counter mapping) string start end (- bufsize nul-len))
+        (funcall (encoder mapping) string start end buffer 0)))
+    pjstring))
+
+
+(defun pj-str-length (pjstr)
+  (foreign-slot-value pjstr 'pj-str 'slen))
 
 (defun pj-str-to-lisp (pointer &key (encoding *default-foreign-encoding*))
   (unless (null-pointer-p pointer)
     (let ((count (pj-str-length pointer))
-	  ;; it is not clear yet if PJSIP strings orthogonal to encoding capacity, using default mapping
+	  ;; it is not clear yet if PJSIP strings orthogonal to encoding capacity
 	  (mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding)))
       (multiple-value-bind (size new-end)
           (funcall (cffi::code-point-counter mapping)
@@ -53,9 +61,6 @@
 	  (funcall (cffi::decoder mapping)
 		   (foreign-slot-value pointer 'pj-str 'ptr) 0 new-end string 0)
 	  string)))))
-
-(defun pj-str-length (pjstr)
-  (foreign-slot-value pjstr 'pj-str 'slen))
 
 (defcenum pjsip-module-priority
   (:pjsip-mod-priority-transport-layer 8)
