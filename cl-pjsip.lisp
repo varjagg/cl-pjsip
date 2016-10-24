@@ -34,8 +34,28 @@
 
 (defctype pj-str (:struct pj-str))
 
-;;translator for pj-str to lisp strings
+(defun lisp-string-to-pj-str (string pjstring)
+  "Map Lisp strings to pj_str"
+  (check-type string string)
+  (with-foreign-slots ((ptr slen) pjstring pj-str)
+    (setf slen (length string))
+    ))
 
+(defun pj-str-to-lisp (pointer &key (encoding *default-foreign-encoding*))
+  (unless (null-pointer-p pointer)
+    (let ((count (pj-str-length pointer))
+	  ;; it is not clear yet if PJSIP strings orthogonal to encoding capacity, using default mapping
+	  (mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding)))
+      (multiple-value-bind (size new-end)
+          (funcall (cffi::code-point-counter mapping)
+                   pointer 0 count (1- array-total-size-limit))
+	(let ((string (make-string size)))
+	  (funcall (cffi::decoder mapping)
+		   (foreign-slot-value pointer 'pj-str 'ptr) 0 new-end string 0)
+	  string)))))
+
+(defun pj-str-length (pjstr)
+  (foreign-slot-value pjstr 'pj-str 'slen))
 
 (defcenum pjsip-module-priority
   (:pjsip-mod-priority-transport-layer 8)
