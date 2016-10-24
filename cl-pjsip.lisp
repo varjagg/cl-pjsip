@@ -900,6 +900,77 @@
 
 (defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
 
+(defcenum pjmedia-dir
+  :pjmedia-dir-none
+  (:pjmedia-dir-encoding 1)
+  (:pjmedia-dir-capture 1)
+  (:pjmedia-dir-decoding 2)
+  (:pjmedia-dir-playback 2)
+  (:pjmedia-dir-render 2)
+  (:pjmedia-dir-encoding-decoding 3)
+  (:pjmedia-dir-capture-playback 3)
+  (:pjmedia-dir-capture-render 3))
+
+(defcenum pjmedia-format-detail-type
+  :pjmedia-format-detail-none
+  :pjmedia-format-detail-audio
+  :pjmedia-format-detail-video
+  :pjmedia-format-detail-max)
+
+(defcstruct pjmedia-audio-format-detail
+  (clock-rate :uint)
+  (channel-count :uint)
+  (frame-time-usec :uint)
+  (bits-per-sample :uint)
+  (avg-bps :uint32)
+  (max-bps :uint32))
+
+(defcstruct pjmedia-rect-size
+  (w :uint)
+  (h :uint))
+
+(defcstruct pjmedia-ratio
+  (num :int)
+  (denum :int))
+
+(defcstruct pjmedia-video-format-detail
+  (size (:struct pjmedia-rect-size))
+  (fps (:struct pjmedia-ratio))
+  (avg-bps :uint32)
+  (max-bps :uint32))
+
+(defcunion format-det
+  (aud (:struct pjmedia-audio-format-detail))
+  (vid (:struct pjmedia-video-format-detail))
+  (user :char :count 1)) ;PJMEDIA_FORMAT_DETAIL_USER_SIZE
+
+(defcstruct pjmedia-format
+  (id :uint32)
+  (type pjmedia-type)
+  (detail-type pjmedia-format-detail-type)
+  (det (:union format-det)))
+
+(defcstruct pjmedia-port-info
+  (name pj-str)
+  (signature :uint32)
+  (dir pjmedia-dir)
+  (fmt (:struct pjmedia-format)))
+
+(defcstruct port-port-data
+  (pdata (:pointer :void))
+  (ldata :long))
+
+(defcstruct pjmedia-port
+  (info (:struct pjmedia-port-info))
+  (port-data (:struct port-port-data))
+  ;;callbackery
+  (put-frame :pointer)
+  (get-frame :pointer)
+  (on-destroy :pointer))
+
+
+(defcfun "pjmedia_stream_get_port" pj-status (stream (:pointer (:struct pjmedia-stream))) (p-port (:pointer (:pointer (:struct pjmedia-port)))))
+
 (defcfun "pjmedia_transport_close" pj-status (transport (:pointer (:struct pjmedia-transport))))
 
 (defcfun "pjmedia_endpt_destroy" pj-status (endpt (:pointer (:struct pjmedia-endpt))))
@@ -987,4 +1058,26 @@
 (defcfun "pjsip_inv_verify_request" pj-status (rdata (:pointer (:struct pjsip-rx-data))) (options :uint)
 	 (l-sdp (:pointer (:struct pjmedia-sdp-session))) (dlg (:pointer (:struct pjsip-dialog)))
 	 (endpt (:pointer (:struct pjsip-endpoint))) (p-tdata (:pointer (:pointer (:struct pjsip-tx-data)))))
+
+(defctype pjsip-user-agent (:struct pjsip-module))
+
+(defcfun "pjsip_dlg_create_uas_and_inc_lock" pj-status (ua (:pointer pjsip-user-agent)) (rdata (:pointer (:struct pjsip-rx-data)))
+	 (contact (:pointer pj-str)) (p-dlg (:pointer (:pointer (:struct pjsip-dialog)))))
+
+(defcfun "pjmedia_endpt_create_sdp" pj-status (endpt (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
+	 (stream-cnt :uint) (sock-info (:pointer (:struct pjmedia-sock-info))) (p-session (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjsip_dlg_inc_lock" :void (dlg (:pointer (:struct pjsip-dialog))))
+(defcfun "pjsip_dlg_try_inc_lock" pj-status (dlg (:pointer (:struct pjsip-dialog))))
+(defcfun "pjsip_dlg_dec_lock" :void (dlg (:pointer (:struct pjsip-dialog))))
+
+(defcfun "pjsip_inv_create_uas" pj-status (dlg (:pointer (:struct pjsip-dialog))) (rdata (:pointer (:struct pjsip-rx-data)))
+	 (local-sdp (:pointer (:struct pjmedia-sdp-session))) (options :uint) (p-inv (:pointer (:pointer (:struct pjsip-inv-session)))))
+
+(defcfun "pjsip_inv_initial_answer" pj-status (inv (:pointer (:struct pjsip-inv-session))) (rdata (:pointer (:struct pjsip-rx-data)))
+	 (st-code :int) (st-text (:pointer pj-str)) (sdp (:pointer (:struct pjmedia-sdp-session)))
+	 (p-session (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjsip_inv_answer" pj-status (inv (:pointer (:struct pjsip-inv-session))) (st-code :int) (st-text (:pointer pj-str))
+	 (local-sdp (:pointer (:struct pjmedia-sdp-session))) (p-session (:pointer (:pointer (:struct pjmedia-sdp-session)))))
 
