@@ -2,10 +2,34 @@
 
 (in-package #:cl-pjsip)
 
+(define-foreign-library libpj
+  (:unix (:or "libpj.so.2" "libpj.so")))
+
 (define-foreign-library libpjsip
   (:unix (:or "libpjsip.so.2" "libpjsip.so")))
 
+(define-foreign-library libpjsip-ua
+  (:unix (:or "libpjsip-ua.so")))
+
+(define-foreign-library libpjsua
+  (:unix (:or "libpjsua.so")))
+
+(define-foreign-library libpjmedia
+  (:unix (:or "libpjmedia.so")))
+
+(define-foreign-library libpjmedia-codec
+  (:unix (:or "libpjmedia-codec.so")))
+
+(define-foreign-library libpjlib-util
+  (:unix (:or "libpjlib-util.so")))
+
+(use-foreign-library libpj)
 (use-foreign-library libpjsip)
+(use-foreign-library libpjsip-ua)
+(use-foreign-library libpjsua)
+(use-foreign-library libpjmedia)
+(use-foreign-library libpjmedia-codec)
+(use-foreign-library libpjlib-util)
 
 (defctype size :unsigned-int)
 (defctype pj-status :int)
