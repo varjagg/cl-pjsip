@@ -23,14 +23,6 @@
 (define-foreign-library libpjlib-util
   (:unix (:or "libpjlib-util.so")))
 
-(use-foreign-library libpj)
-(use-foreign-library libpjsip)
-(use-foreign-library libpjsip-ua)
-(use-foreign-library libpjsua)
-(use-foreign-library libpjmedia)
-(use-foreign-library libpjmedia-codec)
-(use-foreign-library libpjlib-util)
-
 (defctype size :unsigned-int)
 (defctype pj-status :int)
 
