@@ -34,10 +34,6 @@
 (defctype size :unsigned-int)
 (defctype pj-status :int)
 
-(defcfun "pj_init" pj-status)
-(defcfun "pj_log_set_level" :void (log-level :int))
-(defcfun "pjlib_util_init" pj-status)
-
 (defctype pj-size-t size)
 
 (defcstruct pj-pool-factory-policy
@@ -79,10 +75,6 @@
   (used-list (:struct pj-list))
   (pool-buf :char :count 256))
 
-(defcfun "pj_caching_pool_init" :void (cp (:pointer (:struct pj-caching-pool))) 
-	 (factory-default-policy (:pointer (:struct pj-pool-factory-policy))) (max-capacity size))
-
-
 ;;only found as forward decl in sip_types.h
 (defcstruct pjsip-endpoint
   (pool (:pointer (:struct pj-pool)))
@@ -100,9 +92,6 @@
   (cap-hdr (:struct pjsip-hdr))
   (req-hdr (:struct pjsip-hdr))
   (exit-cb-list (:struct exit-cb)))
-
-(defcfun "pjsip_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
-	 (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcunion pj-in6-addr
   (s6-addr :uint8 :count 32)
@@ -139,8 +128,6 @@
   (ipv4 (:struct pj-sockaddr-in))
   (ipv6 (:struct pj-sockaddr-in6)))
 
-(defcfun "pjsip_sockaddr_init" :void (family :int) (addr (:pointer (:union pj-sockaddr))) (cp :pointer) (port :uint))
-
 (defcstruct pjsip-host-port
   (host :string)
   (port :int))
@@ -148,28 +135,9 @@
 ;;forward decl again
 (defcstruct pjsip-transport)
 
-(defcfun "pjsip_udp_transport_start" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
-	 (local-addr (:pointer (:struct pj-sockaddr-in)))
-	 (hostport (:pointer (:struct pjsip-host-port)))
-	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
-
-(defcfun "pjsip_udp_transport_start6" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
-	 (local-addr (:pointer (:struct pj-sockaddr-in6)))
-	 (hostport (:pointer (:struct pjsip-host-port)))
-	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
-
-(defcfun "pjsip_tsx_layer_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))))
-
 (defcstruct pjsip-ua-init-param
   ;; yet another callback stub
   (on-dlg-forked :pointer))
-
-(defcfun "pjsip_ua_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))) 
-	 (prm (:pointer (:struct pjsip-ua-init-param))))
-
-(defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size-t))
-
-(defcfun "pjsip_100rel_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))))
 
 (defcstruct pj-str
   (ptr (:pointer :char))
@@ -194,9 +162,6 @@
   (on-tx-request :pointer)
   (on-tx-response :pointer)
   (on-tsx-state :pointer))
-
-(defcfun "pjsip_endpt_register_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
-	 (module (:pointer (:struct pjsip-module))))
 
 (defcstruct pjsip-inv-callback ;all callbacks are dangling defs..
   (on-state-changed :pointer)
@@ -268,11 +233,6 @@
   (has-telephone-event pj-bool)
   (exit-cb-ost (:struct exit-cb)))
 
-(defcfun "pjmedia_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
-	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpt))))
-
-(defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer (:struct pjmedia-endpt))))
-
 (defcenum pjmedia-transport-type
   :pjmedia-transport-type-udp
   :pjmedia-transport-type-ice
@@ -300,9 +260,6 @@
   (op (:pointer (:struct pjmedia-transport-op)))
   (user-data (:pointer :void)))
 
-(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (af :int) (name :string) (addr pj-str)
-	 (port :int) (options :uint) (p-tp (:pointer (:pointer (:struct pjmedia-transport)))))
-
 (defctype pj-sock :long)
 
 (defcstruct pjmedia-sock-info
@@ -322,10 +279,6 @@
   (src-rtcp-name (:union pj-sockaddr))
   (specific-info-cnt :uint)
   (spc-info (:struct pjmedia-transport-specific-info) :count 4))
-
-(defcfun "pjmedia_transport_info_init" :void (info (:pointer (:struct pjmedia-transport-info))))
-
-(defcfun "pjmedia-transport-get-info" pj-status (tp (:pointer (:struct pjmedia-transport))) (info (:pointer (:struct pjmedia-transport-info))))
 
 (defctype pjsip-user-agent (:struct pjsip-module))
 (defctype pj-bool :int)
@@ -637,9 +590,6 @@
   (via-addr (:struct pjsip-host-port))
   (via-tp :pointer))
 
-(defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
-	 (local-contact (:pointer pj-str)) (remote-uri (:pointer pj-str)) (target (:pointer pj-str))
-	 (p-dlg (:pointer (:pointer (:struct pjsip-dialog)))))
 (defcstruct pjmedia-sock-info
   (rtp-sock pj-sock)
   (rtp-addr-name (:union pj-sockaddr))
@@ -669,9 +619,6 @@
   (attr :pointer :count 68) ;dangling, 32*2 + 4
   (media-count :uint)
   (media :pointer :count 16)) ;dangling
-
-(defcfun "pjmedia_endpt_create_sdp" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
-	 (stream-cnt :uint) (sock-info (:pointer (:struct pjmedia-sock-info))) (p-sdp (:pointer (:pointer (:struct pjmedia-sdp-session)))))
 
 (defcenum pjsip-inv-state
     :pjsip_inv_state_null	
@@ -709,18 +656,9 @@
   (timer :pointer) ;dangling
   (following-fork pj-bool))
 
-(defcfun "pjsip_inv_create_uac" pj-status (dlg (:pointer (:struct pjsip-dialog))) (local-sdp (:pointer (:struct pjmedia-sdp-session)))
-	 (options :uint) (p-inv (:pointer (:pointer (:struct pjsip-inv-session)))))
-
-(defcfun "pjsip_inv_invite" pj-status (inv (:pointer (:struct pjsip-inv-session))) (p-tdata :pointer (:pointer)))
-
-(defcfun "pjsip_inv_send_msg" pj-status (inv (:pointer (:struct pjsip-inv-session))) (tdata :pointer))
-
 (defcstruct pj-time-val
   (sec :long)
   (msec :long))
-
-(defcfun "pjsip_endpt_handle_events" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (max-timeout (:pointer (:struct pj-time-val))))
 
 (defcstruct pj-ioqueue-op-key
   (internal (:pointer :void) :count 32)
@@ -875,9 +813,6 @@
   (msg-info (:struct rx-data-msg-info))
   (endpt-info (:struct rx-data-endpt-info)))
 
-(defcfun "pjsip_endpt_respond_stateless" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (rdata (:pointer (:struct pjsip-rx-data)))
-	 (st-code :int) (st-text (:pointer pj-str)) (hdr-list (:pointer (:struct pjsip-hdr))) (body (:pointer (:struct pjsip-msg-body))))
-
 (defcstruct pjmedia-stream
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
@@ -905,24 +840,6 @@
   (active-remote-sdp (:pointer (:struct pjmedia-sdp-session)))
   (neg-local-sdp (:pointer (:struct pjmedia-sdp-session)))
   (neg-remote-sdp (:pointer (:struct pjmedia-sdp-session))))
-
-(defcfun "pjmedia_sdp_neg_get_active_local" pj-status (neg (:pointer (:struct pjmedia-sdp-neg)))
-	 (local (:pointer (:pointer (:struct pjmedia-sdp-session)))))
-
-(defcfun "pjmedia_sdp_neg_get_active_remote" pj-status (neg (:pointer (:struct pjmedia-sdp-neg)))
-	 (remote (:pointer (:pointer (:struct pjmedia-sdp-session)))))
-
-(defcfun "pjmedia_stream_info_from_sdp" pj-status (info (:pointer (:struct pjmedia-stream-info))) (pool (:pointer (:struct pj-pool)))
-	 (endpt (:pointer (:struct pjmedia-endpt))) (local (:pointer (:struct pjmedia-sdp-session)))
-	 (remote (:pointer (:struct pjmedia-sdp-session))) (stream-idx :uint))
-
-(defcfun "pjmedia_stream_create" pj-status (endpt (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
-	 (info (:pointer (:struct pjmedia-stream-info))) (tp (:pointer (:struct pjmedia-transport)))
-	 (user-data (:pointer :void)) (p-stream (:pointer (:pointer (:struct pjmedia-stream)))))
-
-(defcfun "pjmedia_stream_start" pj-status (stream (:pointer (:struct pjmedia-stream))))
-
-(defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
 
 (defcenum pjmedia-dir
   :pjmedia-dir-none
@@ -991,21 +908,6 @@
   (put-frame :pointer)
   (get-frame :pointer)
   (on-destroy :pointer))
-
-
-(defcfun "pjmedia_stream_get_port" pj-status (stream (:pointer (:struct pjmedia-stream))) (p-port (:pointer (:pointer (:struct pjmedia-port)))))
-
-(defcfun "pjmedia_transport_close" pj-status (transport (:pointer (:struct pjmedia-transport))))
-
-(defcfun "pjmedia_endpt_destroy" pj-status (endpt (:pointer (:struct pjmedia-endpt))))
-
-(defcfun "pjsip_endpt_destroy" pj-status (endpt (:pointer (:struct pjsip-endpoint))))
-
-(defcfun "pj_pool_release" :void (pool (:pointer (:struct pj-pool))))
-
-(defcfun "pjsip_get_status_text" (:pointer pj-str) (code :int))
-
-(defcfun "pjsip_inv_state_name" :string (state pjsip-inv-state))
 
 (defcstruct pjsip-tx-data-op-key
   (op-key (:struct pj-ioqueue-op-key))
@@ -1078,6 +980,103 @@
   (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
   (via-addr (:struct pjsip-host-port))
   (via-tp (:pointer :void)))
+
+(defcfun "pj_init" pj-status)
+(defcfun "pj_log_set_level" :void (log-level :int))
+(defcfun "pjlib_util_init" pj-status)
+
+(defcfun "pj_caching_pool_init" :void (cp (:pointer (:struct pj-caching-pool))) 
+	 (factory-default-policy (:pointer (:struct pj-pool-factory-policy))) (max-capacity size))
+
+(defcfun "pjsip_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (endpt-name :string) 
+	 (endpoint (:pointer (:struct pjsip-endpoint))))
+
+(defcfun "pjsip_sockaddr_init" :void (family :int) (addr (:pointer (:union pj-sockaddr))) (cp :pointer) (port :uint))
+
+(defcfun "pjsip_udp_transport_start" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
+	 (local-addr (:pointer (:struct pj-sockaddr-in)))
+	 (hostport (:pointer (:struct pjsip-host-port)))
+	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
+
+(defcfun "pjsip_udp_transport_start6" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
+	 (local-addr (:pointer (:struct pj-sockaddr-in6)))
+	 (hostport (:pointer (:struct pjsip-host-port)))
+	 (async-cnt :uint) (p_transport (:pointer (:pointer (:struct pjsip-transport)))))
+
+(defcfun "pjsip_tsx_layer_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))))
+
+(defcfun "pjsip_ua_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))) 
+	 (prm (:pointer (:struct pjsip-ua-init-param))))
+
+(defcfun "pjsip_inv_create_uac" pj-status (dlg (:pointer (:struct pjsip-dialog))) (local-sdp (:pointer (:struct pjmedia-sdp-session)))
+	 (options :uint) (p-inv (:pointer (:pointer (:struct pjsip-inv-session)))))
+
+(defcfun "pjsip_inv_invite" pj-status (inv (:pointer (:struct pjsip-inv-session))) (p-tdata :pointer (:pointer)))
+
+(defcfun "pjsip_inv_send_msg" pj-status (inv (:pointer (:struct pjsip-inv-session))) (tdata :pointer))
+
+(defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size-t))
+
+(defcfun "pjsip_100rel_init_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint))))
+
+(defcfun "pjsip_endpt_register_module" pj-status (endpoint (:pointer (:struct pjsip-endpoint)))
+	 (module (:pointer (:struct pjsip-module))))
+
+(defcfun "pjsip_endpt_handle_events" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (max-timeout (:pointer (:struct pj-time-val))))
+
+(defcfun "pjmedia_endpt_create" pj-status (factory (:pointer (:struct pj-pool-factory))) (ioqueue :pointer) 
+	 (worker-cnt :uint) (endpoint (:pointer (:struct pjmedia-endpt))))
+
+(defcfun "pjsip_endpt_respond_stateless" pj-status (endpt (:pointer (:struct pjsip-endpoint))) (rdata (:pointer (:struct pjsip-rx-data)))
+	 (st-code :int) (st-text (:pointer pj-str)) (hdr-list (:pointer (:struct pjsip-hdr))) (body (:pointer (:struct pjsip-msg-body))))
+
+(defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer (:struct pjmedia-endpt))))
+
+(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (af :int) (name :string) (addr pj-str)
+	 (port :int) (options :uint) (p-tp (:pointer (:pointer (:struct pjmedia-transport)))))
+
+(defcfun "pjmedia_transport_info_init" :void (info (:pointer (:struct pjmedia-transport-info))))
+
+(defcfun "pjmedia-transport-get-info" pj-status (tp (:pointer (:struct pjmedia-transport))) (info (:pointer (:struct pjmedia-transport-info))))
+
+(defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
+	 (local-contact (:pointer pj-str)) (remote-uri (:pointer pj-str)) (target (:pointer pj-str))
+	 (p-dlg (:pointer (:pointer (:struct pjsip-dialog)))))
+
+(defcfun "pjmedia_endpt_create_sdp" pj-status (endpoint (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
+	 (stream-cnt :uint) (sock-info (:pointer (:struct pjmedia-sock-info))) (p-sdp (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjmedia_sdp_neg_get_active_local" pj-status (neg (:pointer (:struct pjmedia-sdp-neg)))
+	 (local (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjmedia_sdp_neg_get_active_remote" pj-status (neg (:pointer (:struct pjmedia-sdp-neg)))
+	 (remote (:pointer (:pointer (:struct pjmedia-sdp-session)))))
+
+(defcfun "pjmedia_stream_info_from_sdp" pj-status (info (:pointer (:struct pjmedia-stream-info))) (pool (:pointer (:struct pj-pool)))
+	 (endpt (:pointer (:struct pjmedia-endpt))) (local (:pointer (:struct pjmedia-sdp-session)))
+	 (remote (:pointer (:struct pjmedia-sdp-session))) (stream-idx :uint))
+
+(defcfun "pjmedia_stream_create" pj-status (endpt (:pointer (:struct pjmedia-endpt))) (pool (:pointer (:struct pj-pool)))
+	 (info (:pointer (:struct pjmedia-stream-info))) (tp (:pointer (:struct pjmedia-transport)))
+	 (user-data (:pointer :void)) (p-stream (:pointer (:pointer (:struct pjmedia-stream)))))
+
+(defcfun "pjmedia_stream_start" pj-status (stream (:pointer (:struct pjmedia-stream))))
+
+(defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer (:struct pjmedia-stream))))
+
+(defcfun "pjmedia_stream_get_port" pj-status (stream (:pointer (:struct pjmedia-stream))) (p-port (:pointer (:pointer (:struct pjmedia-port)))))
+
+(defcfun "pjmedia_transport_close" pj-status (transport (:pointer (:struct pjmedia-transport))))
+
+(defcfun "pjmedia_endpt_destroy" pj-status (endpt (:pointer (:struct pjmedia-endpt))))
+
+(defcfun "pjsip_endpt_destroy" pj-status (endpt (:pointer (:struct pjsip-endpoint))))
+
+(defcfun "pj_pool_release" :void (pool (:pointer (:struct pj-pool))))
+
+(defcfun "pjsip_get_status_text" (:pointer pj-str) (code :int))
+
+(defcfun "pjsip_inv_state_name" :string (state pjsip-inv-state))
 
 (defcfun "pjsip_inv_verify_request" pj-status (rdata (:pointer (:struct pjsip-rx-data))) (options :uint)
 	 (l-sdp (:pointer (:struct pjmedia-sdp-session))) (dlg (:pointer (:struct pjsip-dialog)))
