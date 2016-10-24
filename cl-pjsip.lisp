@@ -79,6 +79,10 @@
   ;;(:simple-parser :string)
   )
 
+(defmethod translate-to-foreign ((s string) (type pj-str-type))
+  (values (foreign-string-alloc s :encoding (fst-encoding type))
+          (fst-free-to-foreign-p type)))
+
 (defmethod translate-from-foreign (ptr (type pj-str-type))
   (unwind-protect
        (values (pj-str-to-lisp ptr))
