@@ -912,7 +912,79 @@
 
 (defcfun "pjsip_inv_state_name" :string (state pjsip-inv-state))
 
+(defcstruct pjsip-tx-data-op-key
+  (op-key (:struct pj-ioqueue-op-key))
+  (tdata :pointer) ;;fwd decl to -tx-data
+  (token (:pointer :void))
+  (callback :pointer)) ;dangling callbackery
+
+(defcstruct pjsip-buffer
+  (start :char)
+  (cur :char)
+  (end :char))
+
+(defcenum pjsip-transport-type-e
+    :pjsip_transport_unspecified
+    :pjsip_transport_udp
+    :pjsip_transport_tcp
+    :pjsip_transport_tls
+    :pjsip_transport_sctp
+    :pjsip_transport_loop
+    :pjsip_transport_loop_dgram
+    :pjsip_transport_start_other
+    (:pjsip_transport_ipv6 128)
+    :pjsip_transport_udp6
+    :pjsip_transport_tcp6
+    :pjsip_transport_tls6)
+
+(defcstruct server-addresses-entry
+  (type pjsip-transport-type-e)
+  (priority :uint)
+  (weight :uint)
+  (addr (:union pj-sockaddr))
+  (addr-len :int))
+
+(defcstruct pjsip-server-addresses
+  (count :uint)
+  (entry (:struct server-addresses-entry) :count 8)) ;PJSIP_MAX_RESOLVED_ADDRESSES
+
+(defcstruct tx-data-dest-info
+  (name pj-str)
+  (addr (:struct pjsip-server-addresses))
+  (cur-addr :uint))
+
+(defcstruct tx-data-tp-info
+  (transport (:pointer (:struct pjsip-transport)))
+  (dst-addr (:union pj-sockaddr))
+  (dst-addr-len :int)
+  (dst-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
+  (dst-port :int))
+
+(defcstruct pjsip-tx-data
+  (list (:struct pj-list))
+  (pool (:pointer (:struct pj-pool)))
+  (obj-name :char :count 32) ;MAX_OBJ_NAME
+  (info :string)
+  (rx-timestamp (:struct pj-time-val))
+  (mgr :pointer) ; dangling transport manager
+  (op-key (:struct pjsip-tx-data-op-key))
+  (lock :pointer) ;dangling lock object
+  (msg (:pointer (:struct pjsip-msg)))
+  (saved-strict-route (:pointer pjsip-route-hdr))
+  (buf (:struct pjsip-buffer))
+  (ref-cnt :pointer) ;dangling atomic
+  (is-pending :int)
+  (token (:pointer :void))
+  (cb :pointer) ;callbackery
+  (dest-info (:struct tx-data-dest-info))
+  (tp-info (:struct tx-data-tp-info))
+  (tp-sel (:struct pjsip-tpselector))
+  (auth-retry pj-bool)
+  (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
+  (via-addr (:struct pjsip-host-port))
+  (via-tp (:pointer :void)))
+
 (defcfun "pjsip_inv_verify_request" pj-status (rdata (:pointer (:struct pjsip-rx-data))) (options :uint)
 	 (l-sdp (:pointer (:struct pjmedia-sdp-session))) (dlg (:pointer (:struct pjsip-dialog)))
-	 (endpt (:pointer (:struct pjsip-endpoint))) (:pointer (:pointer (:struct pjsip-tx-data))))
+	 (endpt (:pointer (:struct pjsip-endpoint))) (p-tdata (:pointer (:pointer (:struct pjsip-tx-data)))))
 
