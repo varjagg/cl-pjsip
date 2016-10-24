@@ -28,6 +28,8 @@
 
 (defctype pj-size-t size)
 
+(defctype pj-bool :int)
+
 (defcstruct pj-str
   (ptr (:pointer :char))
   (slen :long))
@@ -39,10 +41,10 @@
   (check-type string string)
   (with-foreign-slots ((ptr slen) pjstring pj-str)
     (setf slen (length string))
-    (let ((mapping (lookup-mapping *foreign-string-mappings* encoding)))
+    (let ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding)))
       (multiple-value-bind (size end)
-          (funcall (octet-counter mapping) string start end (- bufsize nul-len))
-        (funcall (encoder mapping) string start end buffer 0)))
+          (funcall (cffi::octet-counter mapping) string 0 nil slen)
+        (funcall (cffi::encoder mapping) string 0 end ptr 0)))
     pjstring))
 
 
@@ -108,23 +110,63 @@
   (used-list (:struct pj-list))
   (pool-buf :char :count 256))
 
-;;only found as forward decl in sip_types.h
-(defcstruct pjsip-endpoint
-  (pool (:pointer (:struct pj-pool)))
-  (mutex :pointer) ;dangling
-  (pf (:pointer (:struct pj-pool-factory)))
+(defcenum pjsip-hdr-e
+  :pjsip_h_accept
+  :pjsip_h_accept_encoding_unimp	
+  :pjsip_h_accept_language_unimp	
+  :pjsip_h_alert_info_unimp		
+  :pjsip_h_allow
+  :pjsip_h_authentication_info_unimp	
+  :pjsip_h_authorization
+  :pjsip_h_call_id
+  :pjsip_h_call_info_unimp		
+  :pjsip_h_contact
+  :pjsip_h_content_disposition_unimp	
+  :pjsip_h_content_encoding_unimp	
+  :pjsip_h_content_language_unimp	
+  :pjsip_h_content_length
+  :pjsip_h_content_type
+  :pjsip_h_cseq
+  :pjsip_h_date_unimp			
+  :pjsip_h_error_info_unimp		
+  :pjsip_h_expires
+  :pjsip_h_from
+  :pjsip_h_in_reply_to_unimp		
+  :pjsip_h_max_forwards
+  :pjsip_h_mime_version_unimp		
+  :pjsip_h_min_expires
+  :pjsip_h_organization_unimp		
+  :pjsip_h_priority_unimp		
+  :pjsip_h_proxy_authenticate
+  :pjsip_h_proxy_authorization
+  :pjsip_h_proxy_require_unimp	
+  :pjsip_h_record_route
+  :pjsip_h_reply_to_unimp		
+  :pjsip_h_require
+  :pjsip_h_retry_after
+  :pjsip_h_route
+  :pjsip_h_server_unimp		
+  :pjsip_h_subject_unimp		
+  :pjsip_h_supported
+  :pjsip_h_timestamp_unimp		
+  :pjsip_h_to
+  :pjsip_h_unsupported
+  :pjsip_h_user_agent_unimp		
+  :pjsip_h_via
+  :pjsip_h_warning_unimp		
+  :pjsip_h_www_authenticate
+  :pjsip_h_other)
+
+(defcstruct pjsip-hdr
+  ;;pj-list really via c macrology originally
+  (prev (:pointer :void))
+  (next (:pointer :void))
+  (type pjsip-hdr-e)
   (name pj-str)
-  (timer-heap :pointer) ;dangling
-  (transport-mgr :pointer) ;dangling
-  (ioqueue :pointer) ;dangling
-  (ioq-last-err pj-status)
-  (resolver :pointer) ;dangling
-  (mod-mutex :pointer) ;dangling
-  (modules (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
-  (module-list (:struct pjsip-module))
-  (cap-hdr (:struct pjsip-hdr))
-  (req-hdr (:struct pjsip-hdr))
-  (exit-cb-list (:struct exit-cb)))
+  (sname pj-str)
+  (vptr :pointer))
+
+(defctype pjsip-hdr (:struct pjsip-hdr))
 
 (defcunion pj-in6-addr
   (s6-addr :uint8 :count 32)
@@ -242,11 +284,28 @@
   (mutex :pointer) ;dangling
   (factory-list (:struct pjmedia-codec-factory))
   (codec-cnt :uint)
-  (codec-desc (:struct pjmedia-codec-desc) :count 32))) ;PJMEDIA_CODEC_MGR_MAX_CODECS
+  (codec-desc (:struct pjmedia-codec-desc) :count 32)) ;PJMEDIA_CODEC_MGR_MAX_CODECS
 
 (defcstruct exit-cb
   (list (:struct pj-list))
   (func :pointer)) ;dangling
+
+(defcstruct pjsip-endpoint
+  (pool (:pointer (:struct pj-pool)))
+  (mutex :pointer) ;dangling
+  (pf (:pointer (:struct pj-pool-factory)))
+  (name pj-str)
+  (timer-heap :pointer) ;dangling
+  (transport-mgr :pointer) ;dangling
+  (ioqueue :pointer) ;dangling
+  (ioq-last-err pj-status)
+  (resolver :pointer) ;dangling
+  (mod-mutex :pointer) ;dangling
+  (modules (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
+  (module-list (:struct pjsip-module))
+  (cap-hdr (:struct pjsip-hdr))
+  (req-hdr (:struct pjsip-hdr))
+  (exit-cb-list (:struct exit-cb)))
 
 (defcstruct pjmedia-endpt
   (pool (:pointer (:struct pj-pool)))
@@ -308,7 +367,6 @@
   (spc-info (:struct pjmedia-transport-specific-info) :count 4))
 
 (defctype pjsip-user-agent (:struct pjsip-module))
-(defctype pj-bool :int)
 
 (defcenum pjsip-dialog-state
   :pjsip-dialog-state-null
@@ -426,63 +484,6 @@
   (first-cseq :int32)
   (cseq :int32))
 
-(defcenum pjsip-hdr-e
-  :pjsip_h_accept
-  :pjsip_h_accept_encoding_unimp	
-  :pjsip_h_accept_language_unimp	
-  :pjsip_h_alert_info_unimp		
-  :pjsip_h_allow
-  :pjsip_h_authentication_info_unimp	
-  :pjsip_h_authorization
-  :pjsip_h_call_id
-  :pjsip_h_call_info_unimp		
-  :pjsip_h_contact
-  :pjsip_h_content_disposition_unimp	
-  :pjsip_h_content_encoding_unimp	
-  :pjsip_h_content_language_unimp	
-  :pjsip_h_content_length
-  :pjsip_h_content_type
-  :pjsip_h_cseq
-  :pjsip_h_date_unimp			
-  :pjsip_h_error_info_unimp		
-  :pjsip_h_expires
-  :pjsip_h_from
-  :pjsip_h_in_reply_to_unimp		
-  :pjsip_h_max_forwards
-  :pjsip_h_mime_version_unimp		
-  :pjsip_h_min_expires
-  :pjsip_h_organization_unimp		
-  :pjsip_h_priority_unimp		
-  :pjsip_h_proxy_authenticate
-  :pjsip_h_proxy_authorization
-  :pjsip_h_proxy_require_unimp	
-  :pjsip_h_record_route
-  :pjsip_h_reply_to_unimp		
-  :pjsip_h_require
-  :pjsip_h_retry_after
-  :pjsip_h_route
-  :pjsip_h_server_unimp		
-  :pjsip_h_subject_unimp		
-  :pjsip_h_supported
-  :pjsip_h_timestamp_unimp		
-  :pjsip_h_to
-  :pjsip_h_unsupported
-  :pjsip_h_user_agent_unimp		
-  :pjsip_h_via
-  :pjsip_h_warning_unimp		
-  :pjsip_h_www_authenticate
-  :pjsip_h_other)
-
-(defcstruct pjsip-hdr
-  ;;pj-list really via c macrology originally
-  (prev (:pointer :void))
-  (next (:pointer :void))
-  (type pjsip-hdr-e)
-  (name pj-str)
-  (sname pj-str)
-  (vptr :pointer))
-
-(defctype pjsip-hdr (:struct pjsip-hdr))
 (defctype pjsip-cid-hdr (:struct pjsip-hdr))
 
 (defcstruct pjsip-name-addr
