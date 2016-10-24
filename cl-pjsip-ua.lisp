@@ -1,10 +1,10 @@
-;;;; cl-pjsip-ua.asd
+(in-package #:cl-pjsip)
 
-(asdf:defsystem #:cl-pjsip-ua
-  :description "A simple SIP UA using CL-PJSIP library"
-  :author "Eugene Zaikonnikov <eugene@funcall.org>"
-  :license "GPL v2"
-  :depends-on (#:cl-pjsip)
-  :serial t
-  :components ((:file "cl-pjsip-ua.lisp")))
+(use-foreign-library libpj)
+(use-foreign-library libpjsip)
+(use-foreign-library libpjsip-ua)
+(use-foreign-library libpjsua)
+(use-foreign-library libpjmedia)
+(use-foreign-library libpjmedia-codec)
+(use-foreign-library libpjlib-util)
 
