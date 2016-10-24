@@ -64,6 +64,27 @@
 		   (foreign-slot-value pointer 'pj-str 'ptr) 0 new-end string 0)
 	  string)))))
 
+(define-foreign-type pj-str-type ()
+  (;; CFFI encoding of this string.
+   (encoding :initform nil :initarg :encoding :reader encoding)
+   ;; Should we free after translating from foreign?
+   (free-from-foreign :initarg :free-from-foreign
+                      :reader fst-free-from-foreign-p
+                      :initform nil :type boolean)
+   ;; Should we free after translating to foreign?
+   (free-to-foreign :initarg :free-to-foreign
+                    :reader fst-free-to-foreign-p
+                    :initform t :type boolean))
+  (:actual-type pj-str)
+  ;;(:simple-parser :string)
+  )
+
+(defmethod translate-from-foreign (ptr (type pj-str-type))
+  (unwind-protect
+       (values (pj-str-to-lisp ptr))
+    (when (fst-free-from-foreign-p type)
+      (foreign-free ptr))))
+
 (defcenum pjsip-module-priority
   (:pjsip-mod-priority-transport-layer 8)
   (:pjsip-mod-priority-tsx-layer 16)
