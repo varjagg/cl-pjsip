@@ -1033,6 +1033,10 @@
   (via-addr (:struct pjsip-host-port))
   (via-tp (:pointer :void)))
 
+(defcvar "pj_pool_factory_default_policy" :pointer)
+
+(defcvar "PJ_AF_INET" :uint16)
+
 (defcfun "pj_init" pj-status)
 (defcfun "pj_log_set_level" :void (log-level :int))
 (defcfun "pjlib_util_init" pj-status)
@@ -1062,6 +1066,8 @@
 
 (defcfun "pjsip_inv_create_uac" pj-status (dlg (:pointer (:struct pjsip-dialog))) (local-sdp (:pointer (:struct pjmedia-sdp-session)))
 	 (options :uint) (p-inv (:pointer (:pointer (:struct pjsip-inv-session)))))
+
+(defcfun "pjsip_inv_usage_init" pj-status (endpoint (:pointer (:struct pjsip-endpoint))) (cb (:pointer (:struct pjsip-inv-callback))))
 
 (defcfun "pjsip_inv_invite" pj-status (inv (:pointer (:struct pjsip-inv-session))) (p-tdata :pointer (:pointer)))
 
