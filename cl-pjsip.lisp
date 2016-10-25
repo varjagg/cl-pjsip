@@ -1162,3 +1162,6 @@
 (defcfun "pjsip_inv_answer" pj-status (inv (:pointer (:struct pjsip-inv-session))) (st-code :int) (st-text (:pointer pj-str))
 	 (local-sdp (:pointer (:struct pjmedia-sdp-session))) (p-session (:pointer (:pointer (:struct pjmedia-sdp-session)))))
 
+(defcfun "pj_gethostip" pj-status (af :int) (addr (:pointer (:union pj-sockaddr))))
+
+(defcfun "pjsip_ua_instance" (:pointer pjsip-user-agent))
