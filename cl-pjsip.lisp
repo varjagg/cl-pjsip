@@ -101,6 +101,8 @@
   (block-free :pointer)
   (callback :pointer))
 
+(defctype pj-pool-factory-policy (:struct pj-pool-factory-policy))
+
 (defcstruct pj-pool-factory
   (policy (:struct pj-pool-factory-policy))
   ;;pjsip's own callbackery, we're not going to disturb this
@@ -110,18 +112,26 @@
   (on-block-alloc :pointer)
   (on-block-free :pointer))
 
+(defctype pj-pool-factory (:struct pj-pool-factory))
+
 (defcstruct pj-pool-mem
   (next :pointer))
+
+(defctype pj-pool-mem (:struct pj-pool-mem))
 
 (defcstruct pj-pool
   (first-mem (:pointer (:struct pj-pool-mem)))
   (factory (:pointer (:struct pj-pool-factory)))
   (obj-name :char :count 32)
-  (cb :pointer)) ; callback
+  (cb :pointer)) ;callback
+
+(defctype pj-pool (:struct pj-pool))
 
 (defcstruct pj-list
   (prev (:pointer :void))
   (next (:pointer :void)))
+
+(defctype pj-list (:struct pj-list))
 
 (defcstruct pj-caching-pool
   (factory (:struct pj-pool-factory))
@@ -133,6 +143,8 @@
   (free-list (:struct pj-list) :count 16)
   (used-list (:struct pj-list))
   (pool-buf :char :count 256))
+
+(defctype pj-caching-pool (:struct pj-caching-pool))
 
 (defcenum pjsip-hdr-e
   :pjsip_h_accept
@@ -206,8 +218,12 @@
   (sin6-addr (:union pj-in6-addr))
   (sin6-scope-id :uint32))
 
+(defctype pj-sockaddr-in6 (:struct pj-sockaddr-in6))
+
 (defcstruct pj-in-addr
   (s-addr :uint32))
+
+(defctype pj-in-addr (:struct pj-in-addr))
 
 (defcstruct pj-sockaddr-in
   (sin-zero-len :uint8)
@@ -218,25 +234,37 @@
   (sin-addr (:struct pj-in-addr))
   (sin-zero :char :count 8))
 
+(defctype pj-sockaddr-in (:struct pj-sockaddr-in))
+
 (defcstruct pj-addr-hdr
   (sa-zero-len :uint8)
   (sa-family :uint8))
+
+(defctype pj-addr-hdr (:struct pj-addr-hdr))
 
 (defcunion pj-sockaddr
   (addr (:struct pj-addr-hdr))
   (ipv4 (:struct pj-sockaddr-in))
   (ipv6 (:struct pj-sockaddr-in6)))
 
+(defctype pj-sockaddr (:union pj-sockaddr))
+
 (defcstruct pjsip-host-port
   (host :string)
   (port :int))
 
+(defctype pjsip-host-port (:struct pjsip-host-port))
+
 ;;forward decl again
 (defcstruct pjsip-transport)
+(assert nil)
+(defctype pjsip-transport (:struct pjsip-transport))
 
 (defcstruct pjsip-ua-init-param
   ;; yet another callback stub
   (on-dlg-forked :pointer))
+
+(defctype pjsip-ua-init-param (:struct pjsip-ua-init-param))
 
 (defcstruct pjsip-module
   ;;pj-list really via c macrology originally
@@ -256,6 +284,8 @@
   (on-tx-response :pointer)
   (on-tsx-state :pointer))
 
+(defctype pjsip-module (:struct pjsip-module))
+
 (defcstruct pjsip-inv-callback ;all callbacks are dangling defs..
   (on-state-changed :pointer)
   (on-new-session :pointer)
@@ -267,12 +297,16 @@
   (on-send-ack :pointer)
   (on-redirected :pointer))
 
+(defctype pjsip-inv-callback (:struct pjsip-inv-callback))
+
 (defcstruct pjmedia-codec-factory
   ;;pj-list really via c macrology originally
   (prev (:pointer :void))
   (next (:pointer :void))
   (factory-data (:pointer :void))
   (op :pointer)) ;dangling
+
+(defctype pjmedia-codec-factory (:struct pjmedia-codec-factory))
 
 (defcenum pjmedia-codec-priority
   (:pjmedia-codec-prio-highest 255)
@@ -295,6 +329,8 @@
   (clock-rate :uint)
   (channel-cnt :uint))
 
+(defctype pjmedia-codec-info (:struct pjmedia-codec-info))
+
 (defcstruct pjmedia-codec-desc
   (info (:struct pjmedia-codec-info))
   (id :char :count 32)
@@ -302,6 +338,8 @@
   (factory (:pointer (:struct pjmedia-codec-factory)))
   (param :pointer)) ;dangling
 
+(defctype pjmedia-codec-desc (:struct pjmedia-codec-desc))
+					
 (defcstruct pjmedia-codec-mgr
   (pf (:pointer (:struct pj-pool-factory)))
   (pool (:pointer (:struct pj-pool)))
@@ -310,9 +348,13 @@
   (codec-cnt :uint)
   (codec-desc (:struct pjmedia-codec-desc) :count 32)) ;PJMEDIA_CODEC_MGR_MAX_CODECS
 
+(defctype pjmedia-codec-mgr (:struct pjmedia-codec-mgr))
+
 (defcstruct exit-cb
   (list (:struct pj-list))
   (func :pointer)) ;dangling
+
+(defctype exit-cb (:struct exit-cb))
 
 (defcstruct pjsip-endpoint
   (pool (:pointer (:struct pj-pool)))
@@ -331,6 +373,8 @@
   (req-hdr (:struct pjsip-hdr))
   (exit-cb-list (:struct exit-cb)))
 
+(defctype pjsip-endpoint (:struct pjsip-endpoint))
+
 (defcstruct pjmedia-endpt
   (pool (:pointer (:struct pj-pool)))
   (pf (:pointer (:struct pj-pool-factory)))
@@ -342,6 +386,8 @@
   (quit-flag pj-bool)
   (has-telephone-event pj-bool)
   (exit-cb-ost (:struct exit-cb)))
+
+(defctype pjmedia-endpt (:struct pjmedia-endpt))
 
 (defcenum pjmedia-transport-type
   :pjmedia-transport-type-udp
@@ -364,11 +410,15 @@
   (simulate-lost :pointer)
   (destroy :pointer))
 
+(defctype pjmedia-transport-op (:struct pjmedia-transport-op))
+
 (defcstruct pjmedia-transport
   (name :char :count 32)
   (type pjmedia-transport-type)
   (op (:pointer (:struct pjmedia-transport-op)))
   (user-data (:pointer :void)))
+
+(defctype pjmedia-transport (:struct pjmedia-transport))
 
 (defctype pj-sock :long)
 
@@ -378,10 +428,14 @@
   (rtcp-sock pj-sock)
   (rtcp-addr-name (:union pj-sockaddr)))
 
+(defctype pjmedia-sock-info (:struct pjmedia-sock-info))
+
 (defcstruct pjmedia-transport-specific-info
   (type pjmedia-transport-type)
   (cbsize :int)
   (buffer :char :count 144)) ;36 * sizeof(long)
+
+(defctype pjmedia-transport-specific-info (:struct pjmedia-transport-specific-info))
 
 (defcstruct pjmedia-transport-info
   (sock-info (:struct pjmedia-sock-info))
@@ -389,6 +443,8 @@
   (src-rtcp-name (:union pj-sockaddr))
   (specific-info-cnt :uint)
   (spc-info (:struct pjmedia-transport-specific-info) :count 4))
+
+(defctype pjmedia-transport-info (:struct pjmedia-transport-info))
 
 (defctype pjsip-user-agent (:struct pjsip-module))
 
@@ -398,6 +454,8 @@
 
 (defcstruct pjsip-uri
   (vptr :pointer))
+
+(defctype pjsip-uri (:struct pjsip-uri))
 
 (defcenum pjsip-status-code
   (:pjsip_sc_trying 100)
@@ -468,9 +526,13 @@
   (code pjsip-status-code)
   (reason pj-str))
 
+(defctype pjsip-target (:struct pjsip-target))
+
 (defcstruct pjsip-target-set
   (head (:struct pjsip-target))
   (current (:pointer (:struct pjsip-target))))
+
+(defctype pjsip-target-set (:struct pjsip-target-set))
 
 (defcstruct pjsip-param
   ;;pj-list really via c macrology originally
@@ -478,6 +540,8 @@
   (next (:pointer :void))
   (name pj-str)
   (value pj-str))
+
+(defctype pjsip-param (:struct pjsip-param))
 
 (defcstruct pjsip-fromto-hdr
   ;;pj-list really via c macrology originally
@@ -487,6 +551,7 @@
   (tag pj-str)
   (other-param (:struct pjsip-param)))
 
+(defctype pjsip-fromto-hdr (:struct pjsip-fromto-hdr))
 (defctype pjsip-from-hdr (:struct pjsip-fromto-hdr))
 (defctype pjsip-to-hdr (:struct pjsip-fromto-hdr))
 
@@ -500,6 +565,8 @@
   (expires :int32)
   (other-param (:struct pjsip-param)))
 
+(defctype pjsip-contact-hdr (:struct pjsip-contact-hdr))
+
 (defcstruct pjsip-dlg-party
   (info (:pointer (:struct pjsip-fromto-hdr)))
   (info-str pj-str)
@@ -508,6 +575,8 @@
   (first-cseq :int32)
   (cseq :int32))
 
+(defctype pjsip-dlg-party (:struct pjsip-dlg-party))
+
 (defctype pjsip-cid-hdr (:struct pjsip-hdr))
 
 (defcstruct pjsip-name-addr
@@ -515,10 +584,14 @@
   (display pj-str)
   (uri (:pointer (:struct pjsip-uri))))
 
+(defctype pjsip-name-addr (:struct pjsip-name-addr))
+
 (defcstruct pjsip-routing-hdr
   (hdr (:struct pjsip-hdr))
   (name-addr (:struct pjsip-name-addr))
   (other-param (:struct pjsip-param)))
+
+(defctype pjsip-routing-hdr (:struct pjsip-routing-hdr))
 
 (defctype pjsip-route-hdr (:struct pjsip-routing-hdr))
 (defctype pjsip-rr-hdr (:struct pjsip-routing-hdr))
@@ -526,6 +599,8 @@
 (defcstruct pjsip-common-challenge
   (realm pj-str)
   (other-param (:struct pjsip-param)))
+
+(defctype pjsip-common-challenge (:struct pjsip-common-challenge))
 
 (defcstruct pjsip-digest-challenge
   (realm pj-str)
@@ -537,6 +612,8 @@
   (algorithm pj-str)
   (qop pj-str))
 
+(defctype pjsip-digest-challenge (:struct pjsip-digest-challenge))
+
 (defcstruct pjsip-pgp-challenge
   (realm pj-str)
   (other-param (:struct pjsip-param))
@@ -544,6 +621,8 @@
   (micalgorithm pj-str)
   (pubalgorithm pj-str)
   (nonce pj-str))
+
+(defctype pjsip-pgp-challenge (:struct pjsip-pgp-challenge))
 
 (defcunion u-challenge
   (common (:struct pjsip-common-challenge))
@@ -555,9 +634,13 @@
   (scheme pj-str)
   (challenge (:union u-challenge)))
 
+(defctype pjsip-www-authenticate-hdr (:struct pjsip-www-authenticate-hdr))
+
 (defcstruct pjsip-auth-clt-pref
   (initial-auth pj-bool)
   (algorithm pj-str))
+
+(defctype pjsip-auth-clt-pref (:struct pjsip-auth-clt-pref))
 
 (defcenum pjsip-auth-qop-type
   :pjsip-auth-qop-none
@@ -579,6 +662,8 @@
   #+nil(cached-hdr (:struct pjsip-cached-auth-hdr)) ;no caching support, as it defaults to none in pjsip, but be careful
   )
 
+(defctype pjsip-cached-auth (:struct pjsip-cached-auth))
+
 (defcstruct pjsip-auth-clt-sess
   (pool (:pointer (:struct pj-pool)))
   (endpt (:pointer (:struct pjsip-endpoint)))
@@ -586,6 +671,8 @@
   (cred-cnt :uint)
   (cred-info :pointer)
   (cached-auth (:struct pjsip-cached-auth)))
+
+(defctype pjsip-auth-clt-sess (:struct pjsip-auth-clt-sess))
 
 (defcenum pjsip-role-e
   (:pjsip-role-uac 0)
@@ -607,6 +694,8 @@
 (defcstruct pjsip-tpselector
   (type pjsip-tpselector-type)
   (u (:union selector-u)))
+
+(defctype pjsip-tpselector (:struct pjsip-tpselector))
 
 (defcstruct pjsip-dialog
   ;;pj-list really via c macrology originally
@@ -642,11 +731,15 @@
   (via-addr (:struct pjsip-host-port))
   (via-tp :pointer))
 
+(defctype pjsip-dialog (:struct pjsip-dialog))
+
 (defcstruct pjmedia-sock-info
   (rtp-sock pj-sock)
   (rtp-addr-name (:union pj-sockaddr))
   (rtcp-sock pj-sock)
   (rtcp-addr-name (:union pj-sockaddr)))
+
+(defctype pjmedia-sock-info (:struct pjmedia-sock-info))
 
 (defcstruct sdp-session-origin
   (user pj-str)
@@ -671,6 +764,8 @@
   (attr :pointer :count 68) ;dangling, 32*2 + 4
   (media-count :uint)
   (media :pointer :count 16)) ;dangling
+
+(defctype pjmedia-sdp-session (:struct pjmedia-sdp-session))
 
 (defcenum pjsip-inv-state
     :pjsip_inv_state_null	
@@ -708,24 +803,34 @@
   (timer :pointer) ;dangling
   (following-fork pj-bool))
 
+(defctype pjsip-inv-session (:struct pjsip-inv-session))
+
 (defcstruct pj-time-val
   (sec :long)
   (msec :long))
+
+(defctype pj-time-val (:struct pj-time-val))
 
 (defcstruct pj-ioqueue-op-key
   (internal (:pointer :void) :count 32)
   (activesock-data (:pointer :void))
   (user-data (:pointer :void)))
 
+(defctype pj-ioqueue-op-key (:struct pj-ioqueue-op-key))
+
 (defcstruct pjsip-rx-data-op-key
   (op-key (:struct pj-ioqueue-op-key))
   (rdata :pointer)) ;;fwd decl to -rx-data
+
+(defctype pjsip-rx-data-op-key (:struct pjsip-rx-data-op-key))
 
 (defcstruct rx-data-tp-info
   (pool (:pointer (:struct pj-pool)))
   (transport (:pointer (:struct pjsip-transport)))
   (tp-data (:pointer :void))
   (op-key (:struct pjsip-rx-data-op-key)))
+
+(defctype rx-data-tp-info (:struct rx-data-tp-info))
 
 (defcstruct rx-data-pkt-info
   (timestamp (:struct pj-time-val))
@@ -737,10 +842,14 @@
   (src-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
   (src-port :int))
 
+(defctype rx-data-pkt-info (:struct rx-data-pkt-info))
+
 (defcstruct pjsip-media-type
   (type pj-str)
   (subtype pj-str)
   (param (:struct pjsip-param)))
+
+(defctype pjsip-media-type (:struct pjsip-media-type))
 
 (defcstruct pjsip-msg-body
   (content-type (:struct pjsip-media-type))
@@ -748,6 +857,8 @@
   (len :uint)
   (print-body :pointer) ;dangling callback
   (clone-data :pointer)) ;dangling callback
+
+(defctype pjsip-msg-body (:struct pjsip-msg-body))
 
 (defcenum pjsip-msg-type-e
   :pjsip-request-msg
@@ -766,13 +877,19 @@
   (id pjsip-method-e)
   (name pj-str))
 
+(defctype pjsip-method (:struct pjsip-method))
+
 (defcstruct pjsip-request-line
   (method (:struct pjsip-method))
   (uri (:pointer (:struct pjsip-uri))))
 
+(defctype pjsip-request-line (:struct pjsip-request-line))
+
 (defcstruct pjsip-status-line
   (code :int)
   (reason pj-str))
+
+(defctype pjsip-status-line (:struct pjsip-status-line))
 
 (defcunion msg-line
   (req (:struct pjsip-request-line))
@@ -784,9 +901,13 @@
   (hdr (:struct pjsip-hdr))
   (body (:pointer (:struct pjsip-msg-body))))
 
+(defctype pjsip-msg (:struct pjsip-msg))
+
 (defcstruct pjsip-generic-int-hdr
   (hdr (:struct pjsip-hdr))
   (ivalue :int32))
+
+(defctype pjsip-generic-int-hdr (:struct pjsip-generic-int-hdr))
 
 (defctype pjsip-max-fwd-hdr (:struct pjsip-generic-int-hdr))
 
@@ -810,8 +931,6 @@
 (defcstruct pjsip-ctype-hdr
   (media (:struct pjsip-media-type)))
 
-(defctype pjsip-ctype-hdr (:struct pjsip-ctype-hdr))
-
 (defcstruct pjsip-clen-hdr
   (len :int))
 
@@ -826,7 +945,6 @@
   (values pj-str :count 32)) ;PJSIP_GENERIC_ARRAY_MAX_COUNT
 
 (defctype pjsip-generic-array-hdr (:struct pjsip-generic-array-hdr))
-
 (defctype pjsip-require-hdr (:struct pjsip-generic-array-hdr))
 (defctype pjsip-supported-hdr (:struct pjsip-generic-array-hdr))
 
@@ -836,6 +954,8 @@
   (line :int)
   (col :int)
   (hname pj-str))
+
+(defctype pjsip-parser-err-report (:struct pjsip-parser-err-report))
 
 (defcstruct rx-data-msg-info
   (msg-buf (:pointer :char))
@@ -856,8 +976,12 @@
   (supported (:pointer pjsip-supported-hdr))
   (parse-err (:pointer (:struct pjsip-parser-err-report))))
 
+(defctype rx-data-msg-info (:struct rx-data-msg-info))
+
 (defcstruct rx-data-endpt-info
   (mod-data (:pointer :void) :count 32)) ;PJSIP_MAX_MODULE
+
+(defctype rx-data-endpt-info (:struct rx-data-endpt-info))
 
 (defcstruct pjsip-rx-data
   (tp-info (:struct rx-data-tp-info))
@@ -865,13 +989,19 @@
   (msg-info (:struct rx-data-msg-info))
   (endpt-info (:struct rx-data-endpt-info)))
 
+(defctype pjsip-rx-data (:struct pjsip-rx-data))
+
 (defcstruct pjmedia-stream
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
 
+(defctype pjmedia-stream (:struct pjmedia-stream))
+
 (defcstruct pjmedia-stream-info
   ;;ugly stub for messy struct with bunch of IFDEFs
   (pad :char :count 4096))
+
+(defctype pjmedia-stream-info (:struct pjmedia-stream-info))
 
 (defcenum pjmedia-sdp-neg-state
   :pjmedia-sdp-neg-state-null
@@ -892,6 +1022,8 @@
   (active-remote-sdp (:pointer (:struct pjmedia-sdp-session)))
   (neg-local-sdp (:pointer (:struct pjmedia-sdp-session)))
   (neg-remote-sdp (:pointer (:struct pjmedia-sdp-session))))
+
+(defctype pjmedia-sdp-neg (:struct pjmedia-sdp-neg))
 
 (defcenum pjmedia-dir
   :pjmedia-dir-none
@@ -918,19 +1050,27 @@
   (avg-bps :uint32)
   (max-bps :uint32))
 
+(defctype pjmedia-audio-format-detail (:struct pjmedia-audio-format-detail))
+
 (defcstruct pjmedia-rect-size
   (w :uint)
   (h :uint))
 
+(defctype pjmedia-rect-size (:struct pjmedia-rect-size))
+
 (defcstruct pjmedia-ratio
   (num :int)
   (denum :int))
+
+(defctype pjmedia-ratio (:struct pjmedia-ratio))
 
 (defcstruct pjmedia-video-format-detail
   (size (:struct pjmedia-rect-size))
   (fps (:struct pjmedia-ratio))
   (avg-bps :uint32)
   (max-bps :uint32))
+
+(defctype pjmedia-video-format-detail (:struct pjmedia-video-format-detail))
 
 (defcunion format-det
   (aud (:struct pjmedia-audio-format-detail))
@@ -943,15 +1083,21 @@
   (detail-type pjmedia-format-detail-type)
   (det (:union format-det)))
 
+(defctype pjmedia-format (:struct pjmedia-format))
+
 (defcstruct pjmedia-port-info
   (name pj-str)
   (signature :uint32)
   (dir pjmedia-dir)
   (fmt (:struct pjmedia-format)))
 
+(defctype pjmedia-port-info (:struct pjmedia-port-info))
+
 (defcstruct port-port-data
   (pdata (:pointer :void))
   (ldata :long))
+
+(defctype port-port-data (:struct port-port-data))
 
 (defcstruct pjmedia-port
   (info (:struct pjmedia-port-info))
@@ -961,16 +1107,22 @@
   (get-frame :pointer)
   (on-destroy :pointer))
 
+(defctype pjmedia-port (:struct pjmedia-port))
+
 (defcstruct pjsip-tx-data-op-key
   (op-key (:struct pj-ioqueue-op-key))
   (tdata :pointer) ;;fwd decl to -tx-data
   (token (:pointer :void))
   (callback :pointer)) ;dangling callbackery
 
+(defctype pjsip-tx-data-op-key (:struct pjsip-tx-data-op-key))
+
 (defcstruct pjsip-buffer
   (start :char)
   (cur :char)
   (end :char))
+
+(defctype pjsip-buffer (:struct pjsip-buffer))
 
 (defcenum pjsip-transport-type-e
     :pjsip_transport_unspecified
@@ -996,6 +1148,8 @@
 (defcstruct pjsip-server-addresses
   (count :uint)
   (entry (:struct server-addresses-entry) :count 8)) ;PJSIP_MAX_RESOLVED_ADDRESSES
+
+(defctype pjsip-server-addresses (:struct pjsip-server-addresses))
 
 (defcstruct tx-data-dest-info
   (name pj-str)
@@ -1032,6 +1186,8 @@
   (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
   (via-addr (:struct pjsip-host-port))
   (via-tp (:pointer :void)))
+
+(defctype pjsip-tx-data (:struct pjsip-tx-data))
 
 (defcvar "pj_pool_factory_default_policy" :pointer)
 
