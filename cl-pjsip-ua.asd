@@ -6,5 +6,5 @@
   :license "GPL v2"
   :depends-on (#:cl-pjsip)
   :serial t
-  :components ((:file "cl-pjsip-ua.lisp")))
+  :components ((:file "cl-pjsip-ua")))
 
