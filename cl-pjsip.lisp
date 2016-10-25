@@ -1034,7 +1034,7 @@
 
 (defctype rx-data-endpt-info (:struct rx-data-endpt-info))
 
-(defcstruct pjsip-rx-data
+(defcstruct (pjsip-rx-data :conc-name pjsip-rx-data-)
   (tp-info (:struct rx-data-tp-info))
   (pkt-info (:struct rx-data-pkt-info))
   (msg-info (:struct rx-data-msg-info))
