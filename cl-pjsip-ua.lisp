@@ -41,7 +41,7 @@
 			 (tdata '(:pointer (:struct pjsip-tx-data))))
     (foreign-slot-value 
      (foreign-slot-value 
-      (foreign-slot-value rdata '(:struct pjsip-rx-data) 'msg-info) '(:struct rx-data-msg-info) 'msg)
+      (foreign-slot-value rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
      '(:struct pjsip-msg) 'line)))
   1)
 
@@ -52,7 +52,7 @@
 	  on-rx-request (callback 'on-rx-request))))
 
 (defun run-agent (&optional uri)
-  (with-foreign-object (pool-ptr '(:pointer (:struct pj-pool)))
+  (with-foreign-object (pool-ptr '(:pointer pj-pool))
     (let (status)
       (assert-success (pj-init))
       (pj-log-set-level 5)
