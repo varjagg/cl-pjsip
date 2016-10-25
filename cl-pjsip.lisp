@@ -36,7 +36,7 @@
 
 (defctype pj-str (:struct pj-str))
 
-(defun lisp-string-to-pj-str (string pjstring &key (encoding *default-foreign-encoding*))
+(defun lisp-string-to-pj-str (string pjstring)
   "Map Lisp strings to pj_str"
   (check-type string string)
   (with-foreign-slots ((ptr slen) pjstring pj-str)
