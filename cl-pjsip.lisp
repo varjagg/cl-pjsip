@@ -26,7 +26,7 @@
 (defctype size :unsigned-int)
 (defctype pj-status :int)
 
-(defctype pj-size-t size)
+(defctype pj-size size)
 
 (defctype pj-bool :int)
 
@@ -135,11 +135,11 @@
 
 (defcstruct pj-caching-pool
   (factory (:struct pj-pool-factory))
-  (capacity pj-size-t)
-  (max-capacity pj-size-t)
-  (used-count pj-size-t)
-  (used-size pj-size-t)
-  (peak-used-size pj-size-t)
+  (capacity pj-size)
+  (max-capacity pj-size)
+  (used-count pj-size)
+  (used-size pj-size)
+  (peak-used-size pj-size)
   (free-list (:struct pj-list) :count 16)
   (used-list (:struct pj-list))
   (pool-buf :char :count 256))
@@ -255,9 +255,60 @@
 
 (defctype pjsip-host-port (:struct pjsip-host-port))
 
-;;forward decl again
-(defcstruct pjsip-transport)
-;(assert nil)
+(defcstruct pjsip-transport-key
+  (type :long)
+  (rem-addr pj-sockaddr))
+
+(defctype pjsip-transport-key (:struct pjsip-transport-key))
+
+(defcenum pjsip-transport-dir
+  :pjsip-tp-dir-none
+  :pjsip-tp-dir-outcoming
+  :pjsip-tp-dir-incoming)
+
+(defctype pj-timer-id :int)
+
+(defcstruct pj-timer-entry
+  (user-data (:pointer :void))
+  (id :int)
+  (cb :pointer) ;callbackery
+  (_timer-id pj-timer-id)
+  (_timer-value pj-time-val)
+  (_grp-lock :pointer)) ;dangling
+
+(defctype pj-timer-entry (:struct pj-timer-entry))
+
+(defcstruct pj-timestamp
+  (w1 :uint32)
+  (w2 :uint32)
+  (u64 :uint64))
+
+(defctype pj-timestamp (:struct pj-timestamp))
+
+(defcstruct pjsip-transport
+  (obj-name :char :count 32) ;MAX_OBJ_NAME
+  (pool (:pointer pj-pool))
+  (ref-cnt :pointer) ;dangling
+  (lock :pointer) ;dangling
+  (tracing pj-bool)
+  (is-shutdown pj-bool)
+  (is-destroying pj-bool)
+  (key pjsip-transport-key)
+  (type-name (:pointer :char))
+  (flag :uint)
+  (addr-len :int)
+  (local-addr pj-sockaddr)
+  (local-name pjsip-host-port)
+  (remote-name pjsip-host-port)
+  (dir pjsip-transport-dir)
+  (endpt (:pointer pjsip-endpoint))
+  (tpmgr :pointer) ;dangling
+  (factory :pointer) ;dangling
+  (idle-timer pj-timer-entry)
+  (last-recv-ts pj-timestamp)
+  (last-recv-len pj-size)
+  (data (:pointer :void)))
+
 (defctype pjsip-transport (:struct pjsip-transport))
 
 (defcstruct pjsip-ua-init-param
@@ -1231,7 +1282,7 @@
 
 (defcfun "pjsip_inv_send_msg" pj-status (inv (:pointer pjsip-inv-session)) (tdata :pointer))
 
-(defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size-t))
+(defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size))
 
 (defcfun "pjsip_100rel_init_module" pj-status (endpoint (:pointer pjsip-endpoint)))
 
