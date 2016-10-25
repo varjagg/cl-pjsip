@@ -28,6 +28,12 @@
 
 (defvar *mod-simpleua* (foreign-alloc '(:struct pjsip-module)))
 
+(defmacro assert-success (expr)
+  `(assert (= ,expr 0)))
+
+(defun pj-success (val)
+  (= val 0))
+
 (defcallback on-rx-request pj-bool ((rdata (:pointer (:struct pjsip-rx-data))))
   (unwind-protect (with-foreign-objects ((hostaddr '(:union pj-sockaddr))
 			 (local-uri 'pj-str)
@@ -46,14 +52,62 @@
 	  priority (foreign-enum-keyword 'pjsip-module-priority :pjsip-module-priority-application)
 	  on-rx-request (callback 'on-rx-request))))
 
-(defcvar "pj_pool_factory_default_policy" :pointer)
-
-(defun run-agent ()
+(defun run-agent (&optional uri)
   (with-foreign-object (pool-ptr '(:pointer (:struct pj-pool)))
     (let (status)
-      (assert (= (pj-init) 0))
-      (pj-set-log-level 5)
-      (assert (= (pjlib-util-init) 0))
+      (assert-success (pj-init))
+      (pj-log-set-level 5)
+      (assert (pjlib-util-init))
       (pj-caching-pool-init *cp* (get-var-pointer *pj-pool-factory-default-policy*) 0)
-      (with-foreign-object (hostname '(:pointer (:struct pj-str)))
-	))))
+      (let ((endpt-name (machine-instance)))
+	(assert-success (pjsip-endpt-create (foreign-slot-value *cp* '(:struct pj-caching-pool) 'factory) endpt-name *endpt*)))
+      (with-foreign-object (addr '(:union pj-sockaddr))
+	(pjsip-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
+	(assert-success (pjsip-udp-transport-start *endpt* (foreign-slot-value addr '(:union pj-sockaddr) 'ipv4)
+						   (null-pointer) 1 (null-pointer))))
+      ;;init transaction layer
+      (assert-success (pjsip-tsx-layer-init-module *endpt*))
+      ;;init UA layer
+      (assert-success (pjsip-ua-init-module *endpt* (null-pointer)))
+
+      ;; init INVITE session module
+      (with-foreign-object (inv-cb '(:struct pjsip-inv-callback))
+	(pj-bzero inv-cb (foreign-type-size '(:struct pjsip-inv-callback)))
+	(with-foreign-slots ((on-state-changed on-new-session on-media-update) inv-cb (:struct pjsip-inv-callback))
+	  (setf on-state-changed (callback 'call-on-state-changed)
+		on-new-session (callback 'call-on-forked)
+		on-media-update (callback 'call-on-media-update))
+	  (assert-success (pjsip-inv-usage-init *endpt* inv-cb))))
+      (assert-success (pjsip-100rel-init-module *endpt*))
+      (assert-success (pjsip-endpt-register-module *endpt* *mod-simpleua*))
+
+      ;;init media endpoint
+      (assert-success (pjmedia-endpt-create (foreign-slot-value *cp* '(:struct pj-caching-pool) 'factory) (null-pointer) 1 *med-endpt*))
+
+      ;;init G711
+      (assert-success (pjmedia-codec-g711-init *med-endpt*))
+      (loop for i from 0 below (length *med-transport*) do
+	   (assert-success (pjmedia-transport-udp-create3 *med-endpt* *pj-af-inet* (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
+							  0 (aref *med-transport* i)))
+
+	   (pjmedia-transport-info-init (aref *med-tpinfo* i))
+	   (pjmedia-transport-get-info (aref *med-transport* i) (aref *med-tpinfo* i))
+
+	   (foreign-funcall "memcpy" :pointer (aref *sock-info* i)
+			    :pointer (foreign-slot-value (aref *med-tpinfo* i) '(:struct pjmedia-transport-info) 'sock-info)
+			    :int (foreign-type-size '(:struct pjmedia-sock-info))
+			    :void))
+      (if uri
+	  (with-foreign-objects ((hostaddr '(:union pj-sockaddr))
+				 (dst-uri 'pj-str)
+				 (local-uri 'pj-str)
+				 (dlg '(:pointer (:struct pjsip-dialog)))
+				 (local-sdp '(:pointer (:struct pjmedia-sdp-session)))
+				 (tdata '(:pointer (:struct pjsip-tx-data))))
+	    (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
+	      (format t "Unable to retrieve local host IP")
+	      (return-from run-agent nil))
+	    (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
+	    ;;create UAC dialog
+	    (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
+	    ))))))
