@@ -14,18 +14,18 @@
 
 (defparameter *complete* (convert-to-foreign 0 'pj-bool))
 (defparameter *endpt* (null-pointer))
-(defvar *cp* (foreign-alloc '(:struct pj-caching-pool)))
+(defvar *cp* (foreign-alloc 'pj-caching-pool))
 (defparameter *med-endpt* (null-pointer))
 (defvar *med-tpinfo* (make-array +max-media-cnt+ :initial-contents (loop repeat +max-media-cnt+
-									    collecting (foreign-alloc '(:struct pjmedia-transport-info)))))
+									    collecting (foreign-alloc 'pjmedia-transport-info))))
 (defvar *med-transport* (make-array +max-media-cnt+ :initial-element (null-pointer)))
-(defvar *sock-info* (foreign-alloc '(:struct pjmedia-sock-info) :count +max-media-cnt+))
+(defvar *sock-info* (foreign-alloc 'pjmedia-sock-info :count +max-media-cnt+))
 ;;;Call variables
 (defvar *inv* (null-pointer))
 (defvar *med-stream* (null-pointer))
 ;;(defvar *snd-port* (null-pointer))
 
-(defvar *mod-simpleua* (foreign-alloc '(:struct pjsip-module)))
+(defvar *mod-simpleua* (foreign-alloc 'pjsip-module))
 
 (defmacro assert-success (expr)
   `(assert (= ,expr 0)))
@@ -46,6 +46,7 @@
   1)
 
 (defun init ()
+  (pj-bzero *mod-simpleua* (foreign-type-size 'pjsip-module))
   (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* pjsip-module)
     (setf name "mod-simpleua"
 	  priority (foreign-enum-keyword 'pjsip-module-priority :pjsip-module-priority-application)
