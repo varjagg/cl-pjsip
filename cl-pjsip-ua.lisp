@@ -29,17 +29,31 @@
 (defvar *mod-simpleua* (foreign-alloc '(:struct pjsip-module)))
 
 (defcallback on-rx-request pj-bool ((rdata (:pointer (:struct pjsip-rx-data))))
-  (with-foreign-objects ((hostaddr '(:union pj-sockaddr))
+  (unwind-protect (with-foreign-objects ((hostaddr '(:union pj-sockaddr))
 			 (local-uri 'pj-str)
 			 (dlg '(:pointer (:struct pjsip-dialog)))
 			 (local-sdp '(:pointer (:struct pjmedia-sdp-session)))
 			 (tdata '(:pointer (:struct pjsip-tx-data))))
-    
-    )
+    (foreign-slot-value 
+     (foreign-slot-value 
+      (foreign-slot-value rdata '(:struct pjsip-rx-data) 'msg-info) '(:struct rx-data-msg-info) 'msg)
+     '(:struct pjsip-msg) 'line)))
   1)
 
 (defun init ()
   (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* (:struct pjsip-module))
     (setf name "mod-simpleua"
-	  priority :pjsip-module-priority-application
+	  priority (foreign-enum-keyword 'pjsip-module-priority :pjsip-module-priority-application)
 	  on-rx-request (callback 'on-rx-request))))
+
+(defcvar "pj_pool_factory_default_policy" :pointer)
+
+(defun run-agent ()
+  (with-foreign-object (pool-ptr '(:pointer (:struct pj-pool)))
+    (let (status)
+      (assert (= (pj-init) 0))
+      (pj-set-log-level 5)
+      (assert (= (pjlib-util-init) 0))
+      (pj-caching-pool-init *cp* (get-var-pointer *pj-pool-factory-default-policy*) 0)
+      (with-foreign-object (hostname '(:pointer (:struct pj-str)))
+	))))
