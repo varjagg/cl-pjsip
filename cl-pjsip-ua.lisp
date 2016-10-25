@@ -19,8 +19,7 @@
 (defvar *med-tpinfo* (make-array +max-media-cnt+ :initial-contents (loop repeat +max-media-cnt+
 									    collecting (foreign-alloc '(:struct pjmedia-transport-info)))))
 (defvar *med-transport* (make-array +max-media-cnt+ :initial-element (null-pointer)))
-(defvar *sock-info* (make-array +max-media-cnt+ :initial-contents (loop repeat +max-media-cnt+
-									    collecting (foreign-alloc '(:struct pjmedia-sock-info)))))
+(defvar *sock-info* (foreign-alloc '(:struct pjmedia-sock-info) :count +max-media-cnt+))
 ;;;Call variables
 (defvar *inv* (null-pointer))
 (defvar *med-stream* (null-pointer))
@@ -93,7 +92,7 @@
 	   (pjmedia-transport-info-init (aref *med-tpinfo* i))
 	   (pjmedia-transport-get-info (aref *med-transport* i) (aref *med-tpinfo* i))
 
-	   (foreign-funcall "memcpy" :pointer (aref *sock-info* i)
+	   (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* i)
 			    :pointer (foreign-slot-value (aref *med-tpinfo* i) '(:struct pjmedia-transport-info) 'sock-info)
 			    :int (foreign-type-size '(:struct pjmedia-sock-info))
 			    :void))
@@ -110,4 +109,40 @@
 	    (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
 	    ;;create UAC dialog
 	    (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
-	    ))))))
+	    (assert-success (pjmedia-endpt-create-sdp *med-endpt* (foreign-slot-value (mem-ref dlg '(:struct pjsip-dialog))
+										      '(:struct pjsip-dialog)'pool)
+						      +max-media-cnt+ *sock-info* local-sdp))
+
+	    ;;create the INVITE session and pass the above created SDP
+	    (assert-success (pjsip-inv-create-uac dlg local-sdp 0 *inv*))
+
+	    (assert-success (pjsip-inv-invite *inv* tdata))
+	    ;;get the ball rolling over the net
+	    (assert-success (pjsip-inv-send-msg *inv* tdata)))
+	  (format t "Ready to accept incoming calls.."))
+      
+      (loop until *complete* do
+	   (with-foreign-object (timeout '(:struct pj-time-val))
+	     (setf (foreign-slot-value timeout '(:struct pj-time-val) 'sec) 0
+		   (foreign-slot-value timeout '(:struct pj-time-val) 'msec) 10)
+	     (pjsip-endpt-handle-events *endpt* timeout)))
+
+      (unless (null-pointer-p *med-stream*)
+	(pjmedia-stream-destroy *med-stream*))
+
+      ;;destroy media transports, deinit endpoints..
+      (loop for i from 0 below +max-media-cnt+ do
+	   (unless (null-pointer-p (aref *med-transport* i))
+	     (pjmedia-transport-close (aref *med-transport* i))))
+
+      (unless (null-pointer-p *med-endpt*)
+	(pjmedia-endpt-destroy *med-endpt*))
+
+      (unless (null-pointer-p *endpt*)
+	(pjsip-endpt-destroy *endpt*))
+
+      ;;release pool
+      (unless (null-pointer-p pool)
+	(pj-pool-release pool))))
+  t)
+
