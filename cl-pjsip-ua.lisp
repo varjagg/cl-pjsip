@@ -28,3 +28,18 @@
 
 (defvar *mod-simpleua* (foreign-alloc '(:struct pjsip-module)))
 
+(defcallback on-rx-request pj-bool ((rdata (:pointer (:struct pjsip-rx-data))))
+  (with-foreign-objects ((hostaddr '(:union pj-sockaddr))
+			 (local-uri 'pj-str)
+			 (dlg '(:pointer (:struct pjsip-dialog)))
+			 (local-sdp '(:pointer (:struct pjmedia-sdp-session)))
+			 (tdata '(:pointer (:struct pjsip-tx-data))))
+    
+    )
+  1)
+
+(defun init ()
+  (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* (:struct pjsip-module))
+    (setf name "mod-simpleua"
+	  priority :pjsip-module-priority-application
+	  on-rx-request (callback 'on-rx-request))))
