@@ -33,12 +33,12 @@
 (defun pj-success (val)
   (= val 0))
 
-(defcallback on-rx-request pj-bool ((rdata (:pointer (:struct pjsip-rx-data))))
-  (unwind-protect (with-foreign-objects ((hostaddr '(:union pj-sockaddr))
+(defcallback on-rx-request pj-bool ((rdata (:pointer pjsip-rx-data)))
+  (unwind-protect (with-foreign-objects ((hostaddr 'pj-sockaddr)
 			 (local-uri 'pj-str)
-			 (dlg '(:pointer (:struct pjsip-dialog)))
-			 (local-sdp '(:pointer (:struct pjmedia-sdp-session)))
-			 (tdata '(:pointer (:struct pjsip-tx-data))))
+			 (dlg '(:pointer pjsip-dialog))
+			 (local-sdp '(:pointer pjmedia-sdp-session))
+			 (tdata '(:pointer pjsip-tx-data)))
     (foreign-slot-value 
      (foreign-slot-value 
       (foreign-slot-value rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
@@ -46,7 +46,7 @@
   1)
 
 (defun init ()
-  (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* (:struct pjsip-module))
+  (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* pjsip-module)
     (setf name "mod-simpleua"
 	  priority (foreign-enum-keyword 'pjsip-module-priority :pjsip-module-priority-application)
 	  on-rx-request (callback 'on-rx-request))))
@@ -145,4 +145,3 @@
       (unless (null-pointer-p pool-ptr)
 	(pj-pool-release pool-ptr))))
   t)
-
