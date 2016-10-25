@@ -41,10 +41,9 @@
   (check-type string string)
   (with-foreign-slots ((ptr slen) pjstring pj-str)
     (setf slen (length string))
-    (let ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding)))
-      (multiple-value-bind (size end)
-          (funcall (cffi::octet-counter mapping) string 0 nil (1- slen))
-        (funcall (cffi::encoder mapping) string 0 (1+ end) ptr 0)))
+    (setf ptr (foreign-alloc :char :count slen))
+    (loop for i from 0 below slen do
+	 (setf (mem-aref ptr :char i) (char-code (char string i))))
     pjstring))
 
 
