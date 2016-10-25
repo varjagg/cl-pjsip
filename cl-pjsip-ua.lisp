@@ -42,7 +42,7 @@
     (foreign-slot-value 
      (foreign-slot-value 
       (foreign-slot-value rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
-     '(:struct pjsip-msg) 'line)))
+     'pjsip-msg 'line)))
   1)
 
 (defun init ()
