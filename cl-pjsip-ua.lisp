@@ -75,10 +75,10 @@
       (assert-success (pjlib-util-init))
       (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
       (let ((endpt-name (machine-instance)))
-	(assert-success (pjsip-endpt-create (foreign-slot-value *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
+	(assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
       (with-foreign-object (addr 'pj-sockaddr)
 	(pjsip-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
-	(assert-success (pjsip-udp-transport-start *endpt* (foreign-slot-value addr 'pj-sockaddr 'ipv4)
+	(assert-success (pjsip-udp-transport-start *endpt* (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
 						   (null-pointer) 1 (null-pointer))))
       ;;init transaction layer
       (assert-success (pjsip-tsx-layer-init-module *endpt*))
@@ -97,7 +97,7 @@
       (assert-success (pjsip-endpt-register-module *endpt* *mod-simpleua*))
 
       ;;init media endpoint
-      (assert-success (pjmedia-endpt-create (foreign-slot-value *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
+      (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
 
       ;;init G711
       (assert-success (pjmedia-codec-g711-init *med-endpt*))
@@ -109,7 +109,7 @@
 	   (pjmedia-transport-get-info (aref *med-transport* i) (aref *med-tpinfo* i))
 
 	   (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* i)
-			    :pointer (foreign-slot-value (aref *med-tpinfo* i) 'pjmedia-transport-info 'sock-info)
+			    :pointer (foreign-slot-pointer (aref *med-tpinfo* i) 'pjmedia-transport-info 'sock-info)
 			    :int (foreign-type-size 'pjmedia-sock-info)
 			    :void))
       (if uri
@@ -125,8 +125,7 @@
 	    (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
 	    ;;create UAC dialog
 	    (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
-	    (assert-success (pjmedia-endpt-create-sdp *med-endpt* (foreign-slot-value (mem-ref dlg 'pjsip-dialog)
-										      'pjsip-dialog'pool)
+	    (assert-success (pjmedia-endpt-create-sdp *med-endpt* (foreign-slot-pointer (mem-ref dlg 'pjsip-dialog) 'pjsip-dialog 'pool)
 						      +max-media-cnt+ *sock-info* local-sdp))
 
 	    ;;create the INVITE session and pass the above created SDP
