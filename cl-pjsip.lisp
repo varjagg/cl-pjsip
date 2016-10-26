@@ -268,6 +268,12 @@
 
 (defctype pj-timer-id :int)
 
+(defcstruct pj-time-val
+  (sec :long)
+  (msec :long))
+
+(defctype pj-time-val (:struct pj-time-val))
+
 (defcstruct pj-timer-entry
   (user-data (:pointer :void))
   (id :int)
@@ -284,32 +290,6 @@
   (u64 :uint64))
 
 (defctype pj-timestamp (:struct pj-timestamp))
-
-(defcstruct pjsip-transport
-  (obj-name :char :count 32) ;MAX_OBJ_NAME
-  (pool (:pointer pj-pool))
-  (ref-cnt :pointer) ;dangling
-  (lock :pointer) ;dangling
-  (tracing pj-bool)
-  (is-shutdown pj-bool)
-  (is-destroying pj-bool)
-  (key pjsip-transport-key)
-  (type-name (:pointer :char))
-  (flag :uint)
-  (addr-len :int)
-  (local-addr pj-sockaddr)
-  (local-name pjsip-host-port)
-  (remote-name pjsip-host-port)
-  (dir pjsip-transport-dir)
-  (endpt (:pointer pjsip-endpoint))
-  (tpmgr :pointer) ;dangling
-  (factory :pointer) ;dangling
-  (idle-timer pj-timer-entry)
-  (last-recv-ts pj-timestamp)
-  (last-recv-len pj-size)
-  (data (:pointer :void)))
-
-(defctype pjsip-transport (:struct pjsip-transport))
 
 (defcstruct pjsip-ua-init-param
   ;; yet another callback stub
@@ -425,6 +405,32 @@
   (exit-cb-list (:struct exit-cb)))
 
 (defctype pjsip-endpoint (:struct pjsip-endpoint))
+
+(defcstruct pjsip-transport
+  (obj-name :char :count 32) ;MAX_OBJ_NAME
+  (pool (:pointer pj-pool))
+  (ref-cnt :pointer) ;dangling
+  (lock :pointer) ;dangling
+  (tracing pj-bool)
+  (is-shutdown pj-bool)
+  (is-destroying pj-bool)
+  (key pjsip-transport-key)
+  (type-name (:pointer :char))
+  (flag :uint)
+  (addr-len :int)
+  (local-addr pj-sockaddr)
+  (local-name pjsip-host-port)
+  (remote-name pjsip-host-port)
+  (dir pjsip-transport-dir)
+  (endpt (:pointer pjsip-endpoint))
+  (tpmgr :pointer) ;dangling
+  (factory :pointer) ;dangling
+  (idle-timer pj-timer-entry)
+  (last-recv-ts pj-timestamp)
+  (last-recv-len pj-size)
+  (data (:pointer :void)))
+
+(defctype pjsip-transport (:struct pjsip-transport))
 
 (defcstruct pjmedia-endpt
   (pool (:pointer (:struct pj-pool)))
@@ -855,12 +861,6 @@
   (following-fork pj-bool))
 
 (defctype pjsip-inv-session (:struct pjsip-inv-session))
-
-(defcstruct pj-time-val
-  (sec :long)
-  (msec :long))
-
-(defctype pj-time-val (:struct pj-time-val))
 
 (defcstruct pj-ioqueue-op-key
   (internal (:pointer :void) :count 32)
