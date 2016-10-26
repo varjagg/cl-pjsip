@@ -41,9 +41,9 @@
 			 (dlg '(:pointer pjsip-dialog))
 			 (local-sdp '(:pointer pjmedia-sdp-session))
 			 (tdata '(:pointer pjsip-tx-data)))
-    (foreign-slot-value 
-     (foreign-slot-value 
-      (foreign-slot-value rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
+    (foreign-slot-pointer 
+     (foreign-slot-pointer 
+      (foreign-slot-pointer rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
      'pjsip-msg 'line)))
   1)
 
@@ -53,6 +53,7 @@
   (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* pjsip-module)
     (lisp-string-to-pj-str "mod-simpleua" name)
     (setf priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
+	  id -1
 	  on-rx-request (callback on-rx-request))))
 
 (defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
