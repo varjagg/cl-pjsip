@@ -1298,13 +1298,13 @@
 
 (defctype pjsip-event (:struct pjsip-event))
 
-(defcvar "pj_pool_factory_default_policy" :pointer)
-
 (defcvar "PJ_AF_INET" :uint16)
 
 (defcfun "pj_init" pj-status)
 (defcfun "pj_log_set_level" :void (log-level :int))
 (defcfun "pjlib_util_init" pj-status)
+
+(defcfun "pj_pool_factory_get_default_policy" (:pointer pj-pool-factory-policy))
 
 (defcfun "pj_caching_pool_init" :void (cp (:pointer pj-caching-pool)) 
 	 (factory-default-policy (:pointer pj-pool-factory-policy)) (max-capacity size))
