@@ -48,9 +48,10 @@
   1)
 
 (defun init ()
+  (load-pjsip-libraries)
   (foreign-funcall "bzero" :pointer *mod-simpleua* :int (foreign-type-size 'pjsip-module) :void)
   (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* pjsip-module)
-    (setf ;name "mod-simpleua"
+    (setf ;;name (lisp-string-to-pj-str "mod-simpleua" (foreign-alloc 'pj-str))
 	  priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
 	  on-rx-request (callback on-rx-request))))
 
