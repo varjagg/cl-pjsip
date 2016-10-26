@@ -56,10 +56,13 @@
 	  on-rx-request (callback on-rx-request))))
 
 (defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
-  )
+  (declare (ignorable e))
+  (if (eql (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)) :pjsip-inv-state-disconnected)
+      (format t "Call DISCONNECTED [reason = ~A]" (foreign-enum-keyword 'pjsip-status-code (inv-session-cause inv)))
+      (format t "Call state changed to ~A" (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)))))
 
 (defcallback call-on-forked :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
-  )
+  (declare (ignore inv e)))
 
 (defcallback call-on-media-update :void ((inv (:pointer pjsip-inv-session)) (status pj-status))
   )
