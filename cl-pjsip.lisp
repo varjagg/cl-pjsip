@@ -1242,6 +1242,62 @@
 
 (defctype pjsip-user-agent (:struct pjsip-module))
 
+(defcenum pjsip-event-id-e
+  :pjsip-event-unknown
+  :pjsip-event-timer
+  :pjsip-event-tx-msg
+  :pjsip-event-rx-msg
+  :pjsip-event-transport-error
+  :pjsip-event-tsx-state
+  :pjsip-event-user)
+
+(defcstruct tsx-body-timer
+  (entry (:pointer pj-timer-entry)))
+
+(defcunion tsx-body-tsx-state-src
+  (rdata (:pointer pjsip-rx-data))
+  (tdata (:pointer pjsip-tx-data))
+  (timer (:pointer pj-timer-entry))
+  (status pj-status)
+  (data (:pointer :void)))
+
+(defcstruct tsx-body-tsx-state
+  (src (:union tsx-body-tsx-state-src))
+  (tsx :pointer) ;dangling
+  (prev-state :int)
+  (type pjsip-event-id-e))
+
+(defcstruct tsx-body-tx-msg
+  (tdata (:pointer pjsip-tx-data)))
+
+(defcstruct tsx-body-tx-error
+  (tdata (:pointer pjsip-tx-data))
+  (tsx :pointer)) ;transaction
+
+(defcstruct tsx-body-rx-msg
+  (rdata (:pointer pjsip-rx-data)))
+
+(defcstruct tsx-body-user
+  (user1 (:pointer :void))
+  (user2 (:pointer :void))
+  (user3 (:pointer :void))
+  (user4 (:pointer :void)))
+
+(defcunion event-tsx-body
+  (timer (:struct tsx-body-timer))
+  (tsx-state (:struct tsx-body-tsx-state))
+  (tx-msg (:struct tsx-body-tx-msg))
+  (tx-error (:struct tsx-body-tx-error))
+  (rx-msg (:struct tsx-body-rx-msg))
+  (user (:struct tsx-body-user)))
+
+(defcstruct pjsip-event
+  (list pj-list)
+  (type pjsip-event-id-e)
+  (body (:union event-tsx-body)))
+
+(defctype pjsip-event (:struct pjsip-event))
+
 (defcvar "pj_pool_factory_default_policy" :pointer)
 
 (defcvar "PJ_AF_INET" :uint16)
