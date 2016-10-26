@@ -36,15 +36,28 @@
   (use-foreign-library libpjlib-util))
 
 (defcallback on-rx-request pj-bool ((rdata (:pointer pjsip-rx-data)))
-  (unwind-protect (with-foreign-objects ((hostaddr 'pj-sockaddr)
-			 (local-uri 'pj-str)
-			 (dlg '(:pointer pjsip-dialog))
-			 (local-sdp '(:pointer pjmedia-sdp-session))
-			 (tdata '(:pointer pjsip-tx-data)))
-    (foreign-slot-pointer 
-     (foreign-slot-pointer 
-      (foreign-slot-pointer rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
-     'pjsip-msg 'line)))
+  (unwind-protect
+       (with-foreign-objects ((hostaddr 'pj-sockaddr)
+			      (local-uri 'pj-str)
+			      (dlg '(:pointer pjsip-dialog))
+			      (local-sdp '(:pointer pjmedia-sdp-session))
+			      (tdata '(:pointer pjsip-tx-data)))
+	 (let ((id-val (foreign-slot-value
+			(foreign-slot-pointer
+			 (foreign-slot-pointer
+			  (foreign-slot-value 
+			   (foreign-slot-pointer (foreign-slot-value rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
+			   'pjsip-msg 'line)
+			  'msg-line 'req)
+			 'pjsip-request-line 'method)
+			'pjsip-method 'id)))
+	   (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
+	       (if (not (eql :pjsip-ack-method (foreign-enum-keyword 'pjsip-method-e id-val)))
+		   (with-foreign-object (pjs 'pj-str)
+		     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-to-pj-str "Unable to handle request" pjs)
+						    (null-pointer) (null-pointer)))
+		   1)
+	       ))))
   1)
 
 (defun init ()
