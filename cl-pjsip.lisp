@@ -916,13 +916,13 @@
   :pjsip-response-msg)
 
 (defcenum pjsip-method-e
-  :pjsip_invite_method   
-  :pjsip_cancel_method 
-  :pjsip_ack_method	 
-  :pjsip_bye_method	 
-  :pjsip_register_method
-  :pjsip_options_method
-  :pjsip_other_method)
+  :pjsip-invite-method   
+  :pjsip-cancel-method 
+  :pjsip-ack-method	 
+  :pjsip-bye-method	 
+  :pjsip-register-method
+  :pjsip-options-method
+  :pjsip-other-method)
 
 (defcstruct pjsip-method
   (id pjsip-method-e)
