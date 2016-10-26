@@ -55,6 +55,15 @@
 	  priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
 	  on-rx-request (callback on-rx-request))))
 
+(defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
+  )
+
+(defcallback call-on-forked :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
+  )
+
+(defcallback call-on-media-update :void ((inv (:pointer pjsip-inv-session)) (status pj-status))
+  )
+
 (defun run-agent (&optional uri)
   (with-foreign-object (pool-ptr '(:pointer pj-pool))
     (let (status)
