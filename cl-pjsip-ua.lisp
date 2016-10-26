@@ -73,7 +73,7 @@
       (assert-success (pj-init))
       (pj-log-set-level 5)
       (assert-success (pjlib-util-init))
-      (pj-caching-pool-init *cp* (get-var-pointer *pj-pool-factory-default-policy*) 0)
+      (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
       (let ((endpt-name (machine-instance)))
 	(assert-success (pjsip-endpt-create (foreign-slot-value *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
       (with-foreign-object (addr 'pj-sockaddr)
