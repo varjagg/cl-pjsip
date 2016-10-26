@@ -28,7 +28,7 @@
 
 (defctype pj-size size)
 
-(defctype pj-bool :int)
+(defctype pj-bool :boolean)
 
 (defcstruct pj-str
   (ptr (:pointer :char))
