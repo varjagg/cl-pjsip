@@ -48,11 +48,11 @@
   1)
 
 (defun init ()
-  (pj-bzero *mod-simpleua* (foreign-type-size 'pjsip-module))
+  (foreign-funcall "bzero" :pointer *mod-simpleua* :int (foreign-type-size 'pjsip-module) :void)
   (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* pjsip-module)
-    (setf name "mod-simpleua"
-	  priority (foreign-enum-keyword 'pjsip-module-priority :pjsip-module-priority-application)
-	  on-rx-request (callback 'on-rx-request))))
+    (setf ;name "mod-simpleua"
+	  priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
+	  on-rx-request (callback on-rx-request))))
 
 (defun run-agent (&optional uri)
   (with-foreign-object (pool-ptr '(:pointer pj-pool))
