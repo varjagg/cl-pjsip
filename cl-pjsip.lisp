@@ -825,15 +825,15 @@
 (defctype pjmedia-sdp-session (:struct pjmedia-sdp-session))
 
 (defcenum pjsip-inv-state
-    :pjsip_inv_state_null	
-    :pjsip_inv_state_calling	
-    :pjsip_inv_state_incoming	
-    :pjsip_inv_state_early	
-    :pjsip_inv_state_connecting	
-    :pjsip_inv_state_confirmed	
-    :pjsip_inv_state_disconnected)
+    :pjsip-inv-state-null	
+    :pjsip-inv-state-calling	
+    :pjsip-inv-state-incoming	
+    :pjsip-inv-state-early	
+    :pjsip-inv-state-connecting	
+    :pjsip-inv-state-confirmed	
+    :pjsip-inv-state-disconnected)
 
-(defcstruct pjsip-inv-session
+(defcstruct (pjsip-inv-session :conc-name inv-session-)
   (obj-name :char :count 32) ;PJ_MAX_OBJECT_NAME
   (pool (:pointer (:struct pj-pool)))
   (pool-prov (:pointer (:struct pj-pool)))
