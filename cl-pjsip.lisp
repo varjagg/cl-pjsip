@@ -1352,9 +1352,6 @@
 (defcfun "pjsip_dlg_create_uas_and_inc_lock" pj-status (ua (:pointer pjsip-user-agent)) (rdata (:pointer pjsip-rx-data))
 	 (contact (:pointer pj-str)) (p-dlg (:pointer (:pointer pjsip-dialog))))
 
-(defcfun "pjmedia_endpt_create_sdp" pj-status (endpt (:pointer pjmedia-endpt)) (pool (:pointer pj-pool))
-	 (stream-cnt :uint) (sock-info (:pointer pjmedia-sock-info)) (p-session (:pointer (:pointer pjmedia-sdp-session))))
-
 (defcfun "pjsip_dlg_inc_lock" :void (dlg (:pointer pjsip-dialog)))
 (defcfun "pjsip_dlg_try_inc_lock" pj-status (dlg (:pointer pjsip-dialog)))
 (defcfun "pjsip_dlg_dec_lock" :void (dlg (:pointer pjsip-dialog)))
