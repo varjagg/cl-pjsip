@@ -56,9 +56,9 @@
 		   (with-foreign-object (pjs 'pj-str)
 		     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-to-pj-str "Unable to handle request" pjs)
 						    (null-pointer) (null-pointer)))
-		   1)
+		   t)
 	       ))))
-  1)
+  t)
 
 (defun init ()
   (load-pjsip-libraries)
