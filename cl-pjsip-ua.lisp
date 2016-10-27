@@ -3,6 +3,7 @@
 (defconstant +sip-port+ 5060)
 (defconstant +rtp-port+ 4000)
 (defconstant +max-media-cnt+ 2)
+(defconstant +ivp6_addr_size+ 46)
 
 (defparameter *complete* (convert-to-foreign 0 'pj-bool))
 (defparameter *endpt* (foreign-alloc '(:pointer pjsip-endpoint) :initial-contents (list (null-pointer))))
@@ -43,9 +44,13 @@
 
 (defcallback on-rx-request pj-bool ((rdata (:pointer pjsip-rx-data)))
   (unwind-protect
+       (ua-log "Handling RX request")
        (with-foreign-objects ((hostaddr 'pj-sockaddr)
 			      (local-uri 'pj-str)
 			      (dlg '(:pointer pjsip-dialog))
+			      (pjs 'pj-str)
+			      (options :int)
+			      (hostip :char +ivp6_addr_size+)
 			      (local-sdp '(:pointer pjmedia-sdp-session))
 			      (tdata '(:pointer pjsip-tx-data)))
 	 (let ((id-val (foreign-slot-value
@@ -59,12 +64,59 @@
 			'pjsip-method 'id)))
 	   (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 	       (if (not (eql :pjsip-ack-method (foreign-enum-keyword 'pjsip-method-e id-val)))
-		   (with-foreign-object (pjs 'pj-str)
-		     (ua-log "Handling RX request")
+		   (progn 
 		     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-string-to-pj-str "Unable to handle request" pjs)
 						    (null-pointer) (null-pointer)))
-		   t)
-	       ))))
+		   (return-from on-rx-request t)))
+
+	   (unless (null-pointer-p (mem-ref *inv* :pointer))
+	     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-string-to-pj-str "Another call in progress" pjs)
+					    (null-pointer) (null-pointer))
+	     (return-from on-rx-request t))
+
+	   (unless (pj-success (pjsip-inv-verify-request rdata options (null-pointer) (null-pointer) *endpt* (null-pointer)))
+	     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-string-to-pj-str "INVITE too complex for this humble agent" pjs)
+					    (null-pointer) (null-pointer))
+	     (return-from on-rx-request t))
+
+	   (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
+	     (ua-log "Unable to retrieve local host IP")
+	     (return-from on-rx-request t))
+	   (lisp-string-to-pj-str 
+	    (format nil "<sip:simpleuas@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+)
+	    local-uri)
+	   
+	   (unless (pj-success (pjsip-dlg-create-uas-and-inc-lock (pjsip-ua-instance) rdata local-uri dlg))
+	     (pjsip-endpt-respond-stateless *endpt* rdata 500 (null-pointer)
+					    (null-pointer) (null-pointer))
+	     (return-from on-rx-request t))
+	   
+	   (unless (pj-success (pjmedia-endpt-create-sdp *med-endpt* 
+							 (foreign-slot-pointer (foreign-slot-value rdata 'pjsip-rx-data 'tp-info)
+									       'rx-data-tp-info 'pool)
+							 +max-media-cnt+ *sock-info* local-sdp))
+	     (pjsip-dlg-dec-lock dlg)
+	     (return-from on-rx-request t))
+	   
+	   (unless (pj-success (pjsip-inv-create-uas dlg rdata local-sdp 0 *inv*))
+	     (pjsip-dlg-dec-lock dlg)
+	     (return-from on-rx-request t))
+	   
+	   (pjsip-dlg-dec-lock dlg)
+
+	   ;; initial 180 response
+	   (unless (pj-success (pjsip-inv-initial-answer *inv* rdata 180 (null-pointer) (null-pointer) tdata))
+	     (return-from on-rx-request t))
+
+	   (unless (pj-success (pjsip-inv-send-msg *inv* tdata))
+	     (return-from on-rx-request t))
+
+	   ;; 200 response
+	   (unless (pj-success (pjsip-inv-initial-answer *inv* rdata 200 (null-pointer) (null-pointer) tdata))
+	     (return-from on-rx-request t))
+
+	   (unless (pj-success (pjsip-inv-send-msg *inv* tdata))
+	     (return-from on-rx-request t)))))
   t)
 
 (defun init ()
