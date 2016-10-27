@@ -1364,7 +1364,7 @@
 
 (defcfun "pjmedia_transport_info_init" :void (info (:pointer pjmedia-transport-info)))
 
-(defcfun "pjmedia-transport-get-info" pj-status (tp (:pointer pjmedia-transport)) (info (:pointer pjmedia-transport-info)))
+(defcfun "pjmedia_transport_get_info" pj-status (tp (:pointer pjmedia-transport)) (info (:pointer pjmedia-transport-info)))
 
 (defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
 	 (local-contact (:pointer pj-str)) (remote-uri (:pointer pj-str)) (target (:pointer pj-str))
