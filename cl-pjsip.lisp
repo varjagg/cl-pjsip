@@ -1313,7 +1313,7 @@
 (defcfun "pjsip_endpt_create" pj-status (factory (:pointer pj-pool-factory)) (endpt-name :string) 
 	 (endpoint (:pointer pjsip-endpoint)))
 
-(defcfun "pjsip_sockaddr_init" :void (family :int) (addr (:pointer pj-sockaddr)) (cp :pointer) (port :uint))
+(defcfun "pj_sockaddr_init" :void (family :int) (addr (:pointer pj-sockaddr)) (cp :pointer) (port :uint))
 
 (defcfun "pjsip_udp_transport_start" pj-status (endpoint (:pointer pjsip-endpoint))
 	 (local-addr (:pointer pj-sockaddr-in))
@@ -1426,3 +1426,4 @@
 (defcfun "pj_gethostip" pj-status (af :int) (addr (:pointer pj-sockaddr)))
 
 (defcfun "pjsip_ua_instance" (:pointer pjsip-user-agent))
+
