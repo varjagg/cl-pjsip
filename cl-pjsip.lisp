@@ -1428,5 +1428,7 @@
 
 (defcfun "pj_gethostip" pj-status (af :int) (addr (:pointer pj-sockaddr)))
 
+(defcfun "pj_sockaddr_print" :string (addr (:pointer pj-sockaddr)) (buf :string) (size :int) (flags :uint))
+
 (defcfun "pjsip_ua_instance" (:pointer pjsip-user-agent))
 
