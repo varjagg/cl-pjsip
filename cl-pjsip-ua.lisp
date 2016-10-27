@@ -10,7 +10,8 @@
 (defparameter *med-endpt* (foreign-alloc '(:pointer pjmedia-endpt) :initial-contents (list (null-pointer))))
 (defvar *med-tpinfo* (make-array +max-media-cnt+ :initial-contents (loop repeat +max-media-cnt+
 									    collecting (foreign-alloc 'pjmedia-transport-info))))
-(defvar *med-transport* (make-array +max-media-cnt+ :initial-element (null-pointer)))
+(defparameter *med-transport* (foreign-alloc '(:pointer pjmedia-transport) :count +max-media-cnt+
+				       :initial-contents (loop repeat +max-media-cnt+ collecting (null-pointer))))
 (defvar *sock-info* (foreign-alloc 'pjmedia-sock-info :count +max-media-cnt+))
 ;;;Call variables
 (defparameter *inv* (foreign-alloc '(:pointer pjsip-inv-session) :initial-contents (list (null-pointer))))
@@ -123,15 +124,15 @@
 
     (ua-log "initialize G711 codec")
     (assert-success (pjmedia-codec-g711-init *med-endpt*))
-    (loop for i from 0 below (length *med-transport*) do
+    (loop for i from 0 below +max-media-cnt+ do
 	 (ua-log (format nil "Create transport endpoint ~D..." i))
 	 (assert-success (pjmedia-transport-udp-create3 *med-endpt* *pj-af-inet* (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
-							0 (aref *med-transport* i)))
+							0 (mem-aref *med-transport* '(:pointer pjmedia-transport) i)))
 	 
 	 (pjmedia-transport-info-init (aref *med-tpinfo* i))
-	 (pjmedia-transport-get-info (aref *med-transport* i) (aref *med-tpinfo* i))
+	 (pjmedia-transport-get-info (mem-aref *med-transport* '(:pointer pjmedia-transport) i) (aref *med-tpinfo* i))
 
-	 (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* i)
+	 (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* 'pjmedia-sock-info i)
 			  :pointer (foreign-slot-pointer (aref *med-tpinfo* i) 'pjmedia-transport-info 'sock-info)
 			  :int (foreign-type-size 'pjmedia-sock-info)
 			  :void)
@@ -168,22 +169,22 @@
 	   (pjsip-endpt-handle-events *endpt* timeout)))
 
     (ua-log "Shutting down..")
-    (unless (null-pointer-p *med-stream*)
+    (unless (null-pointer-p (mem-ref *med-stream* :pointer))
       (pjmedia-stream-destroy *med-stream*))
 
     ;;destroy media transports, deinit endpoints..
     (loop for i from 0 below +max-media-cnt+ do
-	 (unless (null-pointer-p (aref *med-transport* i))
-	   (pjmedia-transport-close (aref *med-transport* i))))
+	 (unless (null-pointer-p (mem-aref *med-transport* '(:pointer pjmedia-transport) i))
+	   (pjmedia-transport-close (mem-aref *med-transport* '(:pointer pjmedia-transport) i))))
 
-    (unless (null-pointer-p *med-endpt*)
+    (unless (null-pointer-p (mem-ref *med-endpt* :pointer))
       (pjmedia-endpt-destroy *med-endpt*))
 
-    (unless (null-pointer-p *endpt*)
+    (unless (null-pointer-p (mem-ref *endpt* :pointer))
       (pjsip-endpt-destroy *endpt*))
 
     ;;release pool
-    (unless (null-pointer-p pool-ptr)
+    (unless (null-pointer-p (mem-ref pool-ptr :pointer))
       (pj-pool-release pool-ptr)))
   (ua-log "User Agent Terminated.")
   t)
