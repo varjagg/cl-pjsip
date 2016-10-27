@@ -1303,6 +1303,9 @@
 
 (defcfun "pj_init" pj-status)
 (defcfun "pj_log_set_level" :void (log-level :int))
+(defcfun "pj_log_set_log_func" :void (func :pointer))
+(defcfun "pj_log" :void (sender :string) (level :int) (format :string)) ;silently dropping va_list
+
 (defcfun "pjlib_util_init" pj-status)
 
 (defcfun "pj_pool_factory_get_default_policy" (:pointer pj-pool-factory-policy))

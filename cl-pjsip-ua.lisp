@@ -35,6 +35,13 @@
   (use-foreign-library libpjmedia-codec)
   (use-foreign-library libpjlib-util))
 
+(defcallback logger :void ((level :int) (data :string) (len :int))
+  (declare (ignorable len level))
+  (format t "~A" data))
+
+(defun ua-log (string)
+  (pj-log "cl-pjsip-ua.lisp" 1 string))
+
 (defcallback on-rx-request pj-bool ((rdata (:pointer pjsip-rx-data)))
   (unwind-protect
        (with-foreign-objects ((hostaddr 'pj-sockaddr)
@@ -63,7 +70,7 @@
 (defun init ()
   (load-pjsip-libraries)
   (foreign-funcall "bzero" :pointer *mod-simpleua* :int (foreign-type-size 'pjsip-module) :void)
-  (with-foreign-slots ((name priority on-rx-request) *mod-simpleua* pjsip-module)
+  (with-foreign-slots ((name id priority on-rx-request) *mod-simpleua* pjsip-module)
     (lisp-string-to-pj-str "mod-simpleua" name)
     (setf priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
 	  id -1
@@ -72,8 +79,8 @@
 (defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
   (declare (ignorable e))
   (if (eql (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)) :pjsip-inv-state-disconnected)
-      (format t "Call DISCONNECTED [reason = ~A]" (foreign-enum-keyword 'pjsip-status-code (inv-session-cause inv)))
-      (format t "Call state changed to ~A" (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)))))
+      (ua-log (format nil "Call DISCONNECTED [reason = ~A]" (foreign-enum-keyword 'pjsip-status-code (inv-session-cause inv))))
+      (ua-log (format nil "Call state changed to ~A" (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv))))))
 
 (defcallback call-on-forked :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
   (declare (ignore inv e)))
@@ -85,20 +92,23 @@
   (with-foreign-object (pool-ptr '(:pointer pj-pool))
     (assert-success (pj-init))
     (pj-log-set-level 5)
+    (pj-log-set-log-func (callback logger))
+    (ua-log "Starting user agent..")
     (assert-success (pjlib-util-init))
     (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
     (let ((endpt-name (machine-instance)))
+      (ua-log (format nil "Initialize SIP endpoint with name ~A" endpt-name))
       (assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
     (with-foreign-object (addr 'pj-sockaddr)
       (pj-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
       (assert-success (pjsip-udp-transport-start *endpt* (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
 						 (null-pointer) 1 (null-pointer))))
-    ;;init transaction layer
+    (ua-log "Init transaction layer")
     (assert-success (pjsip-tsx-layer-init-module *endpt*))
-    ;;init UA layer
+    (ua-log "Init UA layer")
     (assert-success (pjsip-ua-init-module *endpt* (null-pointer)))
-
-    ;; init INVITE session module
+    (print 'foo)
+    (ua-log "Init INVITE session module")
     (with-foreign-object (inv-cb 'pjsip-inv-callback)
       (pj-bzero inv-cb (foreign-type-size 'pjsip-inv-callback))
       (with-foreign-slots ((on-state-changed on-new-session on-media-update) inv-cb pjsip-inv-callback)
@@ -109,22 +119,25 @@
     (assert-success (pjsip-100rel-init-module *endpt*))
     (assert-success (pjsip-endpt-register-module *endpt* *mod-simpleua*))
 
-    ;;init media endpoint
+    (ua-log "Initialize media endpoint")
     (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
 
-    ;;init G711
+    (ua-log "initialize G711 codec")
     (assert-success (pjmedia-codec-g711-init *med-endpt*))
     (loop for i from 0 below (length *med-transport*) do
+	 (ua-log (format nil "Create transport endpoint ~D..." i))
 	 (assert-success (pjmedia-transport-udp-create3 *med-endpt* *pj-af-inet* (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
 							0 (aref *med-transport* i)))
-
+	 
 	 (pjmedia-transport-info-init (aref *med-tpinfo* i))
 	 (pjmedia-transport-get-info (aref *med-transport* i) (aref *med-tpinfo* i))
 
 	 (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* i)
 			  :pointer (foreign-slot-pointer (aref *med-tpinfo* i) 'pjmedia-transport-info 'sock-info)
 			  :int (foreign-type-size 'pjmedia-sock-info)
-			  :void))
+			  :void)
+	 (ua-log "    ..done!"))
+
     (if uri
 	(with-foreign-objects ((hostaddr 'pj-sockaddr)
 			       (dst-uri 'pj-str)
@@ -133,7 +146,7 @@
 			       (local-sdp '(:pointer pjmedia-sdp-session))
 			       (tdata '(:pointer pjsip-tx-data)))
 	  (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
-	    (format t "Unable to retrieve local host IP")
+	    (ua-log "Unable to retrieve local host IP")
 	    (return-from run-agent nil))
 	  (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
 	  ;;create UAC dialog
@@ -147,7 +160,7 @@
 	  (assert-success (pjsip-inv-invite *inv* tdata))
 	  ;;get the ball rolling over the net
 	  (assert-success (pjsip-inv-send-msg *inv* tdata)))
-	(format t "Ready to accept incoming calls.."))
+	(ua-log "Ready to accept incoming calls.."))
       
     (loop until *complete* do
 	 (with-foreign-object (timeout 'pj-time-val)
@@ -155,6 +168,7 @@
 		 (foreign-slot-value timeout 'pj-time-val 'msec) 10)
 	   (pjsip-endpt-handle-events *endpt* timeout)))
 
+    (ua-log "Shutting down..")
     (unless (null-pointer-p *med-stream*)
       (pjmedia-stream-destroy *med-stream*))
 
@@ -172,5 +186,6 @@
     ;;release pool
     (unless (null-pointer-p pool-ptr)
       (pj-pool-release pool-ptr)))
+  (ua-log "User Agent Terminated.")
   t)
 
