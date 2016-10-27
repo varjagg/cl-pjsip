@@ -142,7 +142,8 @@
   (peak-used-size pj-size)
   (free-list (:struct pj-list) :count 16)
   (used-list (:struct pj-list))
-  (pool-buf :char :count 256))
+  (pool-buf :char :count 256)
+  (lock :pointer))
 
 (defctype pj-caching-pool (:struct pj-caching-pool))
 
