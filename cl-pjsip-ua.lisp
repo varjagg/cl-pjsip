@@ -153,21 +153,21 @@
 	 (pjmedia-sdp-neg-get-active-remote (inv-session-neg inv) remote-sdp)
 	 
 	 (unless (pj-success (pjmedia-stream-info-from-sdp stream-info (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
-							   *med-endpt* local-sdp remote-sdp 0))
+							   (mem-ref *med-endpt* :pointer) local-sdp remote-sdp 0))
 	   (ua-log "Unable to create audio stream info!")
 	   (return-from call-on-media-update))
 	 
-	 (unless (pj-success (pjmedia-stream-create *med-endpt* (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
+	 (unless (pj-success (pjmedia-stream-create (mem-ref *med-endpt* :pointer) (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
 						    stream-info (mem-aref *med-transport* :pointer 0)
 						    (null-pointer) *med-stream*))
 	   (ua-log "Unable to create audio stream info!")
 	   (return-from call-on-media-update))
 
-	 (unless (pj-success (pjmedia-stream-start *med-stream*))
+	 (unless (pj-success (pjmedia-stream-start (mem-ref *med-stream* :pointer)))
 	   (ua-log "Unable to start audio stream!")
 	   (return-from call-on-media-update))
 	 
-	 (pjmedia-stream-get-port *med-stream* media-port)
+	 (pjmedia-stream-get-port (mem-ref *med-stream* :pointer) media-port)
 	 
 	 ;;could be forwarding media stream to audio dev here
 	 )))
