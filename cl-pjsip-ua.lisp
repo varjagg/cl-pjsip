@@ -103,7 +103,7 @@
 	     (pjsip-dlg-dec-lock dlg)
 	     (return-from on-rx-request t))
 	   
-	   (unless (pj-success (pjsip-inv-create-uas dlg (deref rdata) local-sdp 0 *inv*))
+	   (unless (pj-success (pjsip-inv-create-uas dlg (deref rdata) (deref local-sdp) 0 *inv*))
 	     (pjsip-dlg-dec-lock dlg)
 	     (return-from on-rx-request t))
 	   
@@ -156,11 +156,11 @@
 	 (pjmedia-sdp-neg-get-active-remote (inv-session-neg inv) remote-sdp)
 	 
 	 (unless (pj-success (pjmedia-stream-info-from-sdp stream-info (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
-							   (mem-ref *med-endpt* :pointer) local-sdp remote-sdp 0))
+							   (deref *med-endpt*) local-sdp remote-sdp 0))
 	   (ua-log "Unable to create audio stream info!")
 	   (return-from call-on-media-update))
 	 
-	 (unless (pj-success (pjmedia-stream-create (mem-ref *med-endpt* :pointer) (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
+	 (unless (pj-success (pjmedia-stream-create (deref *med-endpt*) (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
 						    stream-info (mem-aref *med-transport* :pointer 0)
 						    (null-pointer) *med-stream*))
 	   (ua-log "Unable to create audio stream info!")
@@ -211,10 +211,10 @@
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
 
 	 (ua-log "initialize G711 codec")
-	 (assert-success (pjmedia-codec-g711-init (mem-ref *med-endpt* :pointer)))
+	 (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
 	 (loop for i from 0 below +max-media-cnt+ do
 	      (ua-log (format nil "Create transport endpoint ~D..." i))
-	      (assert-success (pjmedia-transport-udp-create3 (mem-ref *med-endpt* :pointer) *pj-af-inet*
+	      (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*
 							     (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
 							     0 (mem-aref *med-transport* '(:pointer pjmedia-transport) i)))
 	 
@@ -240,16 +240,16 @@
 	       (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
 	       ;;create UAC dialog
 	       (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
-	       (assert-success (pjmedia-endpt-create-sdp (mem-ref *med-endpt* :pointer)
+	       (assert-success (pjmedia-endpt-create-sdp (deref *med-endpt*)
 							 (foreign-slot-pointer (mem-ref dlg 'pjsip-dialog) 'pjsip-dialog 'pool)
 							 +max-media-cnt+ *sock-info* local-sdp))
 
 	       ;;create the INVITE session and pass the above created SDP
 	       (assert-success (pjsip-inv-create-uac dlg local-sdp 0 *inv*))
 
-	       (assert-success (pjsip-inv-invite (mem-ref *inv* :pointer) tdata))
+	       (assert-success (pjsip-inv-invite (deref *inv*) tdata))
 	       ;;get the ball rolling over the net
-	       (assert-success (pjsip-inv-send-msg (mem-ref *inv* :pointer) tdata)))
+	       (assert-success (pjsip-inv-send-msg (deref *inv*) tdata)))
 	     (ua-log "Ready to accept incoming calls.."))
       
 	 (loop until *complete* do
@@ -267,8 +267,8 @@
 	      (unless (null-pointer-p (mem-aref *med-transport* '(:pointer pjmedia-transport) i))
 		(pjmedia-transport-close (mem-aref *med-transport* '(:pointer pjmedia-transport) i))))
 
-	 (unless (null-pointer-p (mem-ref *med-endpt* :pointer))
-	   (pjmedia-endpt-destroy (mem-ref *med-endpt* :pointer)))
+	 (unless (null-pointer-p (deref *med-endpt*))
+	   (pjmedia-endpt-destroy (deref *med-endpt*)))
 
 	 (unless (null-pointer-p (deref *endpt*))
 	   (pjsip-endpt-destroy (deref *endpt*)))
