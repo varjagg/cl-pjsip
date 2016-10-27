@@ -1432,3 +1432,4 @@
 
 (defcfun "pjsip_ua_instance" (:pointer pjsip-user-agent))
 
+(defcfun "pjsip_tpmgr_destroy" pj-status (mgr :pointer))
