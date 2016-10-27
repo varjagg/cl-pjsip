@@ -138,7 +138,37 @@
   (declare (ignore inv e)))
 
 (defcallback call-on-media-update :void ((inv (:pointer pjsip-inv-session)) (status pj-status))
-  )
+  (unwind-protect
+       (with-foreign-objects ((stream-info 'pjmedia-stream-info)
+			      (local-sdp '(:pointer pjmedia-sdp-session))
+			      (remote-sdp '(:pointer pjmedia-sdp-session))
+			      (media-port '(:pointer pjmedia-port)))
+	 (unless (pj-success status)
+	   (ua-log "SDP negotiation failed!")
+	   (return-from call-on-media-update))
+	 
+	 (pjmedia-sdp-neg-get-active-local (inv-session-neg inv) local-sdp)
+	 (pjmedia-sdp-neg-get-active-remote (inv-session-neg inv) remote-sdp)
+	 
+	 (unless (pj-success (pjmedia-stream-info-from-sdp stream-info (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
+							   *med-endpt* local-sdp remote-sdp 0))
+	   (ua-log "Unable to create audio stream info!")
+	   (return-from call-on-media-update))
+	 
+	 (unless (pj-success (pjmedia-stream-create *med-endpt* (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
+						    stream-info (mem-aref *med-transport* :pointer 0)
+						    (null-pointer) *med-stream*))
+	   (ua-log "Unable to create audio stream info!")
+	   (return-from call-on-media-update))
+
+	 (unless (pj-success (pjmedia-stream-start *med-stream*))
+	   (ua-log "Unable to start audio stream!")
+	   (return-from call-on-media-update))
+	 
+	 (pjmedia-stream-get-port *med-stream* media-port)
+	 
+	 ;;could be forwarding media stream to audio dev here
+	 )))
 
 (defun run-agent (&optional uri)
   (with-foreign-object (pool-ptr '(:pointer pj-pool))
