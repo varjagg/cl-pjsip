@@ -27,6 +27,9 @@
 (defun pj-success (val)
   (= val 0))
 
+(defun deref (var)
+  (mem-ref var :pointer))
+
 (defun load-pjsip-libraries ()
   (pushnew #p"/usr/local/lib" *foreign-library-directories* :test #'equalp)
   (use-foreign-library libpj)
@@ -67,17 +70,17 @@
 	   (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 	       (if (not (eql :pjsip-ack-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 		   (progn 
-		     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-string-to-pj-str "Unable to handle request" pjs)
+		     (pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (lisp-string-to-pj-str "Unable to handle request" pjs)
 						    (null-pointer) (null-pointer)))
 		   (return-from on-rx-request t)))
 
-	   (unless (null-pointer-p (mem-ref *inv* :pointer))
-	     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-string-to-pj-str "Another call in progress" pjs)
+	   (unless (null-pointer-p (deref *inv*))
+	     (pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (lisp-string-to-pj-str "Another call in progress" pjs)
 					    (null-pointer) (null-pointer))
 	     (return-from on-rx-request t))
 
-	   (unless (pj-success (pjsip-inv-verify-request rdata options (null-pointer) (null-pointer) *endpt* (null-pointer)))
-	     (pjsip-endpt-respond-stateless *endpt* rdata 500 (lisp-string-to-pj-str "INVITE too complex for this humble agent" pjs)
+	   (unless (pj-success (pjsip-inv-verify-request (deref rdata) options (null-pointer) (null-pointer) *endpt* (null-pointer)))
+	     (pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (lisp-string-to-pj-str "INVITE too complex for this humble agent" pjs)
 					    (null-pointer) (null-pointer))
 	     (return-from on-rx-request t))
 
@@ -88,36 +91,36 @@
 	    (format nil "<sip:simpleuas@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+)
 	    local-uri)
 	   
-	   (unless (pj-success (pjsip-dlg-create-uas-and-inc-lock (pjsip-ua-instance) rdata local-uri dlg))
-	     (pjsip-endpt-respond-stateless *endpt* rdata 500 (null-pointer)
+	   (unless (pj-success (pjsip-dlg-create-uas-and-inc-lock (pjsip-ua-instance) (deref rdata) local-uri dlg))
+	     (pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (null-pointer)
 					    (null-pointer) (null-pointer))
 	     (return-from on-rx-request t))
 	   
-	   (unless (pj-success (pjmedia-endpt-create-sdp *med-endpt* 
-							 (foreign-slot-pointer (foreign-slot-value rdata 'pjsip-rx-data 'tp-info)
+	   (unless (pj-success (pjmedia-endpt-create-sdp (deref *med-endpt*) 
+							 (foreign-slot-pointer (foreign-slot-value (deref rdata) 'pjsip-rx-data 'tp-info)
 									       'rx-data-tp-info 'pool)
-							 +max-media-cnt+ *sock-info* local-sdp))
+							 +max-media-cnt+ (deref *sock-info*) local-sdp))
 	     (pjsip-dlg-dec-lock dlg)
 	     (return-from on-rx-request t))
 	   
-	   (unless (pj-success (pjsip-inv-create-uas dlg rdata local-sdp 0 *inv*))
+	   (unless (pj-success (pjsip-inv-create-uas dlg (deref rdata) local-sdp 0 *inv*))
 	     (pjsip-dlg-dec-lock dlg)
 	     (return-from on-rx-request t))
 	   
 	   (pjsip-dlg-dec-lock dlg)
 
 	   ;; initial 180 response
-	   (unless (pj-success (pjsip-inv-initial-answer *inv* rdata 180 (null-pointer) (null-pointer) tdata))
+	   (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) (deref rdata) 180 (null-pointer) (null-pointer) tdata))
 	     (return-from on-rx-request t))
 
-	   (unless (pj-success (pjsip-inv-send-msg *inv* tdata))
+	   (unless (pj-success (pjsip-inv-send-msg (deref *inv*) (deref tdata)))
 	     (return-from on-rx-request t))
 
 	   ;; 200 response
-	   (unless (pj-success (pjsip-inv-initial-answer *inv* rdata 200 (null-pointer) (null-pointer) tdata))
+	   (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) (deref rdata) 200 (null-pointer) (null-pointer) tdata))
 	     (return-from on-rx-request t))
 
-	   (unless (pj-success (pjsip-inv-send-msg *inv* tdata))
+	   (unless (pj-success (pjsip-inv-send-msg (deref *inv*) (deref tdata)))
 	     (return-from on-rx-request t)))))
   t)
 
@@ -186,12 +189,12 @@
 	   (assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
 	 (with-foreign-object (addr 'pj-sockaddr)
 	   (pj-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
-	   (assert-success (pjsip-udp-transport-start (mem-ref *endpt* :pointer) (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
+	   (assert-success (pjsip-udp-transport-start (deref *endpt*) (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
 						      (null-pointer) 1 (null-pointer))))
 	 (ua-log "Init transaction layer")
-	 (assert-success (pjsip-tsx-layer-init-module (mem-ref *endpt* :pointer)))
+	 (assert-success (pjsip-tsx-layer-init-module (deref *endpt*)))
 	 (ua-log "Init UA layer")
-	 (assert-success (pjsip-ua-init-module (mem-ref *endpt* :pointer) (null-pointer)))
+	 (assert-success (pjsip-ua-init-module (deref *endpt*) (null-pointer)))
 
 	 (ua-log "Init INVITE session module")
 	 (with-foreign-object (inv-cb 'pjsip-inv-callback)
@@ -200,9 +203,9 @@
 	     (setf on-state-changed (callback call-on-state-changed)
 		   on-new-session (callback call-on-forked)
 		   on-media-update (callback call-on-media-update))
-	     (assert-success (pjsip-inv-usage-init (mem-ref *endpt* :pointer) inv-cb))))
-	 (assert-success (pjsip-100rel-init-module (mem-ref *endpt* :pointer)))
-	 (assert-success (pjsip-endpt-register-module (mem-ref *endpt* :pointer) *mod-simpleua*))
+	     (assert-success (pjsip-inv-usage-init (deref *endpt*) inv-cb))))
+	 (assert-success (pjsip-100rel-init-module (deref *endpt*)))
+	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
 
 	 (ua-log "Initialize media endpoint")
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
@@ -253,7 +256,7 @@
 	      (with-foreign-object (timeout 'pj-time-val)
 		(setf (foreign-slot-value timeout 'pj-time-val 'sec) 0
 		      (foreign-slot-value timeout 'pj-time-val 'msec) 10)
-		(pjsip-endpt-handle-events (mem-ref *endpt* :pointer) timeout)))
+		(pjsip-endpt-handle-events (deref *endpt*) timeout)))
 
 	 (ua-log "Shutting down..")
 	 (unless (null-pointer-p (mem-ref *med-stream* :pointer))
@@ -267,14 +270,14 @@
 	 (unless (null-pointer-p (mem-ref *med-endpt* :pointer))
 	   (pjmedia-endpt-destroy (mem-ref *med-endpt* :pointer)))
 
-	 (unless (null-pointer-p (mem-ref *endpt* :pointer))
-	   (pjsip-endpt-destroy (mem-ref *endpt* :pointer)))
+	 (unless (null-pointer-p (deref *endpt*))
+	   (pjsip-endpt-destroy (deref *endpt*)))
 
 	 ;;release pool
 	 (unless (null-pointer-p (mem-ref pool-ptr :pointer))
 	   (pj-pool-release (mem-ref pool-ptr :pointer))))
     ;;close sockets here etc on unwind
-    (unless (pj-success (pjsip-tpmgr-destroy (foreign-slot-value (mem-ref *endpt* :pointer) 'pjsip-endpoint 'transport-mgr)))
+    (unless (pj-success (pjsip-tpmgr-destroy (foreign-slot-value (deref *endpt*) 'pjsip-endpoint 'transport-mgr)))
       (ua-log "Unable to shut down the transport!")))
   (ua-log "User Agent Terminated.")
   t)
