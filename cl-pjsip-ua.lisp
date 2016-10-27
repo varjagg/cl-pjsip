@@ -259,8 +259,8 @@
 		(pjsip-endpt-handle-events (deref *endpt*) timeout)))
 
 	 (ua-log "Shutting down..")
-	 (unless (null-pointer-p (mem-ref *med-stream* :pointer))
-	   (pjmedia-stream-destroy (mem-ref *med-stream* :pointer)))
+	 (unless (null-pointer-p (deref *med-stream*))
+	   (pjmedia-stream-destroy (deref *med-stream*)))
 
 	 ;;destroy media transports, deinit endpoints..
 	 (loop for i from 0 below +max-media-cnt+ do
