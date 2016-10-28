@@ -52,6 +52,7 @@
 
 (defctype pj-str (:struct pj-str))
 
+;;;should really really fix this crap, once get the basics working
 (defun lisp-string-to-pj-str (string pjstring)
   "Map Lisp strings to pj_str"
   (check-type string string)
@@ -61,7 +62,6 @@
     (loop for i from 0 below slen do
 	 (setf (mem-aref ptr :char i) (char-code (char string i))))
     pjstring))
-
 
 (defun pj-str-length (pjstr)
   (foreign-slot-value pjstr 'pj-str 'slen))
@@ -78,31 +78,6 @@
 	  (funcall (cffi::decoder mapping)
 		   (foreign-slot-value pointer 'pj-str 'ptr) 0 new-end string 0)
 	  string)))))
-
-;; (define-foreign-type pj-str-tclass ()
-;;   (;; CFFI encoding of this string.
-;;    (encoding :initform nil :initarg :encoding :reader encoding)
-;;    ;; Should we free after translating from foreign?
-;;    (free-from-foreign :initarg :free-from-foreign
-;;                       :reader fst-free-from-foreign-p
-;;                       :initform nil :type boolean)
-;;    ;; Should we free after translating to foreign?
-;;    (free-to-foreign :initarg :free-to-foreign
-;;                     :reader fst-free-to-foreign-p
-;;                     :initform t :type boolean))
-;;   (:actual-type pj-str)
-;;   ;;(:simple-parser :string)
-;;   )
-
-;; (defmethod translate-to-foreign ((s string) (type pj-str-tclass))
-;;   (values (lisp-string-to-pj-str s (foreign-alloc 'pj-str))
-;;           (fst-free-to-foreign-p type)))
-
-;; (defmethod translate-from-foreign (ptr (type pj-str-tclass))
-;;   (unwind-protect
-;;        (values (pj-str-to-lisp ptr))
-;;     (when (fst-free-from-foreign-p type)
-;;       (foreign-free ptr))))
 
 (defcenum pjsip-module-priority
   (:pjsip-mod-priority-transport-layer 8)
@@ -1461,7 +1436,8 @@
     (pjmedia-aud-subsys-shutdown)))
 
 (defun pjmedia-transport-info-init (info)
-  (bzero info (foreign-type-size 'pjmedia-transport-info))
+  ;; we comment bzero out altogher until we find what's going on
+  ;;(bzero info (foreign-type-size 'pjmedia-transport-info))
   (setf (foreign-slot-value (foreign-slot-pointer info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtp-sock) +pj-invalid-socket+
 	(foreign-slot-value (foreign-slot-pointer info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtcp-sock) +pj-invalid-socket+))
 
