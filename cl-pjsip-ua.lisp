@@ -129,7 +129,7 @@
 
 (defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
   (declare (ignorable e))
-  (if (eql (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)) :pjsip-inv-state-disconnected)
+  (if (eql (inv-session-state inv) :pjsip-inv-state-disconnected)
       (progn 
 	(ua-log (format nil "Call DISCONNECTED [reason = ~A]" (inv-session-cause inv)))
 	(setf *complete* t))
