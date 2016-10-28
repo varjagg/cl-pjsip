@@ -1462,8 +1462,8 @@
 
 (defun pjmedia-transport-info-init (info)
   (bzero info (foreign-type-size 'pjmedia-transport-info))
-  (setf (foreign-slot-value (foreign-slot-value info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtp-sock) +pj-invalid-socket+
-	(foreign-slot-value (foreign-slot-value info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtcp-sock) +pj-invalid-socket+))
+  (setf (foreign-slot-value (foreign-slot-pointer info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtp-sock) +pj-invalid-socket+
+	(foreign-slot-value (foreign-slot-pointer info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtcp-sock) +pj-invalid-socket+))
 
 (defun pjmedia-transport-get-info (tp info)
   (if (and (not (null-pointer-p tp))
