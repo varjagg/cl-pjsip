@@ -23,6 +23,11 @@
 (define-foreign-library libpjlib-util
   (:unix (:or "libpjlib-util.so")))
 
+(defconstant +pj-invalid-socket+ -1)
+
+(defconstant +pj-errno-start-status+ 70000)
+(defconstant +pj-enotsup+ (+ +pj-errno-start-status+ 12))
+
 (defctype size :unsigned-int)
 (defctype pj-status :int)
 
@@ -1342,17 +1347,12 @@
 
 (defcfun "pjsip_inv_send_msg" pj-status (inv (:pointer pjsip-inv-session)) (tdata :pointer))
 
-(defcfun "pj_bzero" :void (dst (:pointer :void)) (size pj-size))
-
 (defcfun "pjsip_100rel_init_module" pj-status (endpoint (:pointer pjsip-endpoint)))
 
 (defcfun "pjsip_endpt_register_module" pj-status (endpoint (:pointer pjsip-endpoint))
 	 (module (:pointer pjsip-module)))
 
 (defcfun "pjsip_endpt_handle_events" pj-status (endpt (:pointer pjsip-endpoint)) (max-timeout (:pointer pj-time-val)))
-
-(defcfun "pjmedia_endpt_create" pj-status (factory (:pointer pj-pool-factory)) (ioqueue :pointer) 
-	 (worker-cnt :uint) (endpoint (:pointer pjmedia-endpt)))
 
 (defcfun "pjsip_endpt_respond_stateless" pj-status (endpt (:pointer pjsip-endpoint)) (rdata (:pointer pjsip-rx-data))
 	 (st-code :int) (st-text pj-str) (hdr-list (:pointer pjsip-hdr)) (body (:pointer pjsip-msg-body)))
@@ -1361,10 +1361,6 @@
 
 (defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer pjmedia-endpt)) (af :int) (name :string) (addr pj-str)
 	 (port :int) (options :uint) (p-tp (:pointer (:pointer pjmedia-transport))))
-
-(defcfun "pjmedia_transport_info_init" :void (info (:pointer pjmedia-transport-info)))
-
-(defcfun "pjmedia_transport_get_info" pj-status (tp (:pointer pjmedia-transport)) (info (:pointer pjmedia-transport-info)))
 
 (defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
 	 (local-contact (:pointer pj-str)) (remote-uri (:pointer pj-str)) (target (:pointer pj-str))
@@ -1392,10 +1388,6 @@
 (defcfun "pjmedia_stream_destroy" pj-status (stream (:pointer pjmedia-stream)))
 
 (defcfun "pjmedia_stream_get_port" pj-status (stream (:pointer pjmedia-stream)) (p-port (:pointer (:pointer pjmedia-port))))
-
-(defcfun "pjmedia_transport_close" pj-status (transport (:pointer pjmedia-transport)))
-
-(defcfun "pjmedia_endpt_destroy" pj-status (endpt (:pointer pjmedia-endpt)))
 
 (defcfun "pjsip_endpt_destroy" pj-status (endpt (:pointer pjsip-endpoint)))
 
@@ -1433,3 +1425,40 @@
 (defcfun "pjsip_ua_instance" (:pointer pjsip-user-agent))
 
 (defcfun "pjsip_tpmgr_destroy" pj-status (mgr :pointer))
+
+(defcfun "pjmedia_aud_subsys_init" pj-status (pf (:pointer pj-pool-factory)))
+
+(defcfun "pjmedia_endpt_create2" pj-status (pf (:pointer pj-pool-factory)) (ioqueue :pointer) (worker-cnt :uint)
+	 (p-endpt (:pointer (:pointer pjmedia-endpt))))
+
+(defcfun "pjmedia_endpt_destroy2" pj-status (endpt (:pointer pjmedia-endpt)))
+
+(defcfun "pjmedia_aud_subsys_shutdown" :void)
+
+(defcfun "bzero" :void (s (:pointer :void)) (n size))
+
+;;; Implementing these as PJSIP guys made them inlined in C..
+(defun pjmedia-endpt-create (pf ioqueue worker-cnt p-endpt)
+  (if (pj-success (pjmedia-aud-subsys-init pf))
+      (if (pj-success (pjmedia-endpt-create2 pf ioqueue worker-cnt p-endpt))
+	  0
+	  (progn (pjmedia-aud-subsys-shutdown) 1))
+      1))
+
+(defun pjmedia-endpt-destroy (endpt)
+  (prog1 (pjmedia-endpt-destroy2 endpt)
+    (pjmedia-aud-subsys-shutdown)))
+
+(defun pjmedia-transport-info-init (info)
+  (bzero info (foreign-type-size 'pjmedia-transport-info))
+  (setf (foreign-slot-value (foreign-slot-value info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtp-sock) +pj-invalid-socket+
+	(foreign-slot-value (foreign-slot-value info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtcp-sock) +pj-invalid-socket+))
+
+(defun pjmedia-transport-get-info (tp info)
+  (if (and (not (null-pointer-p tp))
+	   (not (null-pointer-p (foreign-slot-value tp 'pjmedia-transport 'op)))
+	   (not (null-pointer-p (foreign-slot-value (foreign-slot-value tp 'pjmedia-transport 'op) 'pjmedia-transport-op 'get-info))))
+      (foreign-funcall-pointer (foreign-slot-value (foreign-slot-value tp 'pjmedia-transport 'op) 'pjmedia-transport-op 'get-info) ()
+			       :pointer tp :pointer info
+			       pj-status)
+      +pj-enotsup+))
