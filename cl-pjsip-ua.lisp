@@ -131,9 +131,9 @@
   (declare (ignorable e))
   (if (eql (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)) :pjsip-inv-state-disconnected)
       (progn 
-	(ua-log (format nil "Call DISCONNECTED [reason = ~A]" (foreign-enum-keyword 'pjsip-status-code (inv-session-cause inv))))
+	(ua-log (format nil "Call DISCONNECTED [reason = ~A]" (inv-session-cause inv)))
 	(setf *complete* t))
-      (ua-log (format nil "Call state changed to ~A" (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv))))))
+      (ua-log (format nil "Call state changed to ~A" (inv-session-state inv)))))
 
 (defcallback call-on-forked :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
   (declare (ignore inv e)))
@@ -240,21 +240,21 @@
 	       (lisp-string-to-pj-str uri local-uri)
 	       (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2)
 	       (lisp-string-to-pj-str 
-		(print (format nil "<sip:simpleuac@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+))
+		(format nil "<sip:simpleuac@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+)
 		local-uri)
 	       (lisp-string-to-pj-str uri dst-uri)
 	       ;;create UAC dialog
 	       (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
 	       (assert-success (pjmedia-endpt-create-sdp (deref *med-endpt*)
-							 (foreign-slot-pointer (mem-ref dlg 'pjsip-dialog) 'pjsip-dialog 'pool)
+							 (foreign-slot-value (deref dlg) 'pjsip-dialog 'pool)
 							 +max-media-cnt+ *sock-info* local-sdp))
 
 	       ;;create the INVITE session and pass the above created SDP
-	       (assert-success (pjsip-inv-create-uac dlg local-sdp 0 *inv*))
+	       (assert-success (pjsip-inv-create-uac (deref dlg) (deref local-sdp) 0 *inv*))
 
 	       (assert-success (pjsip-inv-invite (deref *inv*) tdata))
 	       ;;get the ball rolling over the net
-	       (assert-success (pjsip-inv-send-msg (deref *inv*) tdata)))
+	       (assert-success (pjsip-inv-send-msg (deref *inv*) (deref tdata))))
 	     (ua-log "Ready to accept incoming calls.."))
       
 	 (loop until *complete* do
