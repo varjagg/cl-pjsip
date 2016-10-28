@@ -5,7 +5,7 @@
 (defconstant +max-media-cnt+ 2)
 (defconstant +ivp6_addr_size+ 46)
 
-(defparameter *complete* (convert-to-foreign 0 'pj-bool))
+(defparameter *complete* nil)
 (defparameter *endpt* (foreign-alloc '(:pointer pjsip-endpoint) :initial-contents (list (null-pointer))))
 (defparameter *cp* (foreign-alloc 'pj-caching-pool))
 (defparameter *med-endpt* (foreign-alloc '(:pointer pjmedia-endpt) :initial-contents (list (null-pointer))))
@@ -130,7 +130,9 @@
 (defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
   (declare (ignorable e))
   (if (eql (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv)) :pjsip-inv-state-disconnected)
-      (ua-log (format nil "Call DISCONNECTED [reason = ~A]" (foreign-enum-keyword 'pjsip-status-code (inv-session-cause inv))))
+      (progn 
+	(ua-log (format nil "Call DISCONNECTED [reason = ~A]" (foreign-enum-keyword 'pjsip-status-code (inv-session-cause inv))))
+	(setf *complete* t))
       (ua-log (format nil "Call state changed to ~A" (foreign-enum-keyword 'pjsip-inv-state (inv-session-state inv))))))
 
 (defcallback call-on-forked :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
@@ -206,17 +208,16 @@
 
 	 (ua-log "initialize G711 codec")
 	 (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
-	 (loop for i from 0 below +max-media-cnt+ do
+	 (loop for i from 0 to 0 do ;;below +max-media-cnt+ do
 	      (ua-log (format nil "Create transport endpoint ~D..." i))
 	      (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*
 							     (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
 							     0 (mem-aptr *med-transport* '(:pointer pjmedia-transport) i)))
-	      (print 0)
+
 	      (pjmedia-transport-info-init (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
-	      (print 1)
-	      (pjmedia-transport-get-info (mem-aptr *med-transport* '(:pointer pjmedia-transport) i)
+	      (pjmedia-transport-get-info (deref (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))
 					  (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
-	      (print 2)
+
 	      (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* 'pjmedia-sock-info i)
 			       :pointer (foreign-slot-pointer (mem-aref *med-tpinfo* 'pjmedia-transport-info i)
 							      'pjmedia-transport-info 'sock-info)
