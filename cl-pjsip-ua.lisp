@@ -208,6 +208,7 @@
 
 	 (ua-log "initialize G711 codec")
 	 (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
+	 ;;(bzero *med-tpinfo* (* (foreign-type-size 'pjmedia-transport-info) +max-media-cnt+))
 	 (loop for i from 0 below +max-media-cnt+ do
 	      (ua-log (format nil "Create transport endpoint ~D..." i))
 	      (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*
@@ -227,6 +228,7 @@
 
 	 (if uri
 	     (with-foreign-objects ((hostaddr 'pj-sockaddr)
+				    (hostip :char +ivp6_addr_size+)
 				    (dst-uri 'pj-str)
 				    (local-uri 'pj-str)
 				    (dlg '(:pointer pjsip-dialog))
@@ -236,7 +238,11 @@
 		 (ua-log "Unable to retrieve local host IP")
 		 (return-from run-agent nil))
 	       (lisp-string-to-pj-str uri local-uri)
-	       (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
+	       (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2)
+	       (lisp-string-to-pj-str 
+		(print (format nil "<sip:simpleuac@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+))
+		local-uri)
+	       (lisp-string-to-pj-str uri dst-uri)
 	       ;;create UAC dialog
 	       (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
 	       (assert-success (pjmedia-endpt-create-sdp (deref *med-endpt*)
