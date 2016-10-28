@@ -166,11 +166,11 @@
 	   (ua-log "Unable to create audio stream info!")
 	   (return-from call-on-media-update))
 
-	 (unless (pj-success (pjmedia-stream-start (mem-ref *med-stream* :pointer)))
+	 (unless (pj-success (pjmedia-stream-start (deref *med-stream*)))
 	   (ua-log "Unable to start audio stream!")
 	   (return-from call-on-media-update))
 	 
-	 (pjmedia-stream-get-port (mem-ref *med-stream* :pointer) media-port)
+	 (pjmedia-stream-get-port (deref *med-stream*) media-port)
 	 
 	 ;;could be forwarding media stream to audio dev here
 	 )))
