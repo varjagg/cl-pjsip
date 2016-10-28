@@ -1,5 +1,6 @@
 ;;;; package.lisp
 
 (defpackage #:cl-pjsip
-  (:use #:cl #:cffi))
+  (:use #:cl #:cffi)
+  (:export "INIT" "RUN-AGENT"))
 
