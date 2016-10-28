@@ -25,8 +25,16 @@
 
 (defconstant +pj-invalid-socket+ -1)
 
+(defconstant +pj-success+ 0)
+
 (defconstant +pj-errno-start-status+ 70000)
 (defconstant +pj-enotsup+ (+ +pj-errno-start-status+ 12))
+
+(defmacro assert-success (expr)
+  `(assert (= ,expr +pj-success+)))
+
+(defun pj-success (val)
+  (= val +pj-success+))
 
 (defctype size :unsigned-int)
 (defctype pj-status :int)
@@ -1441,7 +1449,7 @@
 (defun pjmedia-endpt-create (pf ioqueue worker-cnt p-endpt)
   (if (pj-success (pjmedia-aud-subsys-init pf))
       (if (pj-success (pjmedia-endpt-create2 pf ioqueue worker-cnt p-endpt))
-	  0
+	  +pj-success+
 	  (progn (pjmedia-aud-subsys-shutdown) 1))
       1))
 
@@ -1462,3 +1470,12 @@
 			       :pointer tp :pointer info
 			       pj-status)
       +pj-enotsup+))
+
+(defun pjmedia-transport-close (tp)
+  (if (not (null-pointer-p (foreign-slot-value (foreign-slot-value tp 'pjmedia-transport 'op)
+					       'pjmedia-transport-op 'destroy)))
+      (foreign-funcall-pointer (foreign-slot-value (foreign-slot-value tp 'pjmedia-transport 'op) 'pjmedia-transport-op 'destroy) ()
+			       :pointer tp pj-status)
+      +pj-success+))
+
+
