@@ -2,6 +2,9 @@
 
 (in-package #:cl-pjsip)
 
+(define-foreign-library libpjlib-util
+  (:unix (:or "libpjlib-util.so")))
+
 (define-foreign-library libpj
   (:unix (:or "libpj.so.2" "libpj.so")))
 
@@ -20,8 +23,8 @@
 (define-foreign-library libpjmedia-codec
   (:unix (:or "libpjmedia-codec.so")))
 
-(define-foreign-library libpjlib-util
-  (:unix (:or "libpjlib-util.so")))
+(define-foreign-library libpjmedia-audiodev
+  (:unix (:or "libpjmedia-audiodev.so")))
 
 (defconstant +pj-invalid-socket+ -1)
 

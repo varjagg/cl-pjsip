@@ -21,24 +21,19 @@
 
 (defvar *mod-simpleua* (foreign-alloc 'pjsip-module))
 
-(defmacro assert-success (expr)
-  `(assert (= ,expr 0)))
-
-(defun pj-success (val)
-  (= val 0))
-
 (defun deref (var)
   (mem-ref var :pointer))
 
 (defun load-pjsip-libraries ()
   (pushnew #p"/usr/local/lib" *foreign-library-directories* :test #'equalp)
+  (use-foreign-library libpjlib-util)
   (use-foreign-library libpj)
   (use-foreign-library libpjsip)
   (use-foreign-library libpjsua)
   (use-foreign-library libpjsip-ua)
   (use-foreign-library libpjmedia)
   (use-foreign-library libpjmedia-codec)
-  (use-foreign-library libpjlib-util))
+  (use-foreign-library libpjmedia-audiodev))
 
 (defcallback logger :void ((level :int) (data :string) (len :int))
   (declare (ignorable len level))
