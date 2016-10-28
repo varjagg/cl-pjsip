@@ -9,8 +9,7 @@
 (defparameter *endpt* (foreign-alloc '(:pointer pjsip-endpoint) :initial-contents (list (null-pointer))))
 (defparameter *cp* (foreign-alloc 'pj-caching-pool))
 (defparameter *med-endpt* (foreign-alloc '(:pointer pjmedia-endpt) :initial-contents (list (null-pointer))))
-(defvar *med-tpinfo* (make-array +max-media-cnt+ :initial-contents (loop repeat +max-media-cnt+
-									    collecting (foreign-alloc 'pjmedia-transport-info))))
+(defparameter *med-tpinfo* (foreign-alloc 'pjmedia-transport-info :count +max-media-cnt+))
 (defparameter *med-transport* (foreign-alloc '(:pointer pjmedia-transport) :count +max-media-cnt+
 				       :initial-contents (loop repeat +max-media-cnt+ collecting (null-pointer))))
 (defvar *sock-info* (foreign-alloc 'pjmedia-sock-info :count +max-media-cnt+))
@@ -211,13 +210,16 @@
 	      (ua-log (format nil "Create transport endpoint ~D..." i))
 	      (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*
 							     (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
-							     0 (mem-aref *med-transport* '(:pointer pjmedia-transport) i)))
-	 
-	      (pjmedia-transport-info-init (aref *med-tpinfo* i))
-	      (pjmedia-transport-get-info (mem-aref *med-transport* '(:pointer pjmedia-transport) i) (aref *med-tpinfo* i))
-
+							     0 (mem-aptr *med-transport* '(:pointer pjmedia-transport) i)))
+	      (print 0)
+	      (pjmedia-transport-info-init (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
+	      (print 1)
+	      (pjmedia-transport-get-info (mem-aptr *med-transport* '(:pointer pjmedia-transport) i)
+					  (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
+	      (print 2)
 	      (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* 'pjmedia-sock-info i)
-			       :pointer (foreign-slot-pointer (aref *med-tpinfo* i) 'pjmedia-transport-info 'sock-info)
+			       :pointer (foreign-slot-pointer (mem-aref *med-tpinfo* 'pjmedia-transport-info i)
+							      'pjmedia-transport-info 'sock-info)
 			       :int (foreign-type-size 'pjmedia-sock-info)
 			       :void)
 	      (ua-log "    ..done!"))
@@ -259,8 +261,8 @@
 
 	 ;;destroy media transports, deinit endpoints..
 	 (loop for i from 0 below +max-media-cnt+ do
-	      (unless (null-pointer-p (mem-aref *med-transport* '(:pointer pjmedia-transport) i))
-		(pjmedia-transport-close (mem-aref *med-transport* '(:pointer pjmedia-transport) i))))
+	      (unless (null-pointer-p (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))
+		(pjmedia-transport-close (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))))
 
 	 (unless (null-pointer-p (deref *med-endpt*))
 	   (pjmedia-endpt-destroy (deref *med-endpt*)))
