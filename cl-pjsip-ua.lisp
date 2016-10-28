@@ -171,112 +171,112 @@
 	 ;;could be forwarding media stream to audio dev here
 	 )))
 
-(defun run-agent (&optional uri)
-  (unwind-protect 
-       (with-foreign-object (pool-ptr '(:pointer pj-pool))
+(defun run-agent (&optional uri) 
+  (with-foreign-object (pool-ptr '(:pointer pj-pool))
+    (unwind-protect			;to unwind and protect!
 	 (assert-success (pj-init))
-	 (pj-log-set-level 5)
-	 (pj-log-set-log-func (callback logger))
-	 (ua-log "Starting user agent..")
-	 (assert-success (pjlib-util-init))
-	 (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
-	 (let ((endpt-name (machine-instance)))
-	   (ua-log (format nil "Initialize SIP endpoint with name ~A" endpt-name))
-	   (assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
-	 (with-foreign-object (addr 'pj-sockaddr)
-	   (pj-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
-	   (assert-success (pjsip-udp-transport-start (deref *endpt*) (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
-						      (null-pointer) 1 (null-pointer))))
-	 (ua-log "Init transaction layer")
-	 (assert-success (pjsip-tsx-layer-init-module (deref *endpt*)))
-	 (ua-log "Init UA layer")
-	 (assert-success (pjsip-ua-init-module (deref *endpt*) (null-pointer)))
+      (pj-log-set-level 5)
+      (pj-log-set-log-func (callback logger))
+      (ua-log "Starting user agent..")
+      (assert-success (pjlib-util-init))
+      (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
+      (let ((endpt-name (machine-instance)))
+	(ua-log (format nil "Initialize SIP endpoint with name ~A" endpt-name))
+	(assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
+      (with-foreign-object (addr 'pj-sockaddr)
+	(pj-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
+	(assert-success (pjsip-udp-transport-start (deref *endpt*) (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
+						   (null-pointer) 1 (null-pointer))))
+      (ua-log "Init transaction layer")
+      (assert-success (pjsip-tsx-layer-init-module (deref *endpt*)))
+      (ua-log "Init UA layer")
+      (assert-success (pjsip-ua-init-module (deref *endpt*) (null-pointer)))
 
-	 (ua-log "Init INVITE session module")
-	 (with-foreign-object (inv-cb 'pjsip-inv-callback)
-	   (foreign-funcall "bzero" :pointer inv-cb :int (foreign-type-size 'pjsip-inv-callback) :void)
-	   (with-foreign-slots ((on-state-changed on-new-session on-media-update) inv-cb pjsip-inv-callback)
-	     (setf on-state-changed (callback call-on-state-changed)
-		   on-new-session (callback call-on-forked)
-		   on-media-update (callback call-on-media-update))
-	     (assert-success (pjsip-inv-usage-init (deref *endpt*) inv-cb))))
-	 (assert-success (pjsip-100rel-init-module (deref *endpt*)))
-	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
+      (ua-log "Init INVITE session module")
+      (with-foreign-object (inv-cb 'pjsip-inv-callback)
+	(foreign-funcall "bzero" :pointer inv-cb :int (foreign-type-size 'pjsip-inv-callback) :void)
+	(with-foreign-slots ((on-state-changed on-new-session on-media-update) inv-cb pjsip-inv-callback)
+	  (setf on-state-changed (callback call-on-state-changed)
+		on-new-session (callback call-on-forked)
+		on-media-update (callback call-on-media-update))
+	  (assert-success (pjsip-inv-usage-init (deref *endpt*) inv-cb))))
+      (assert-success (pjsip-100rel-init-module (deref *endpt*)))
+      (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
 
-	 (ua-log "Initialize media endpoint")
-	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
+      (ua-log "Initialize media endpoint")
+      (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
 
-	 (ua-log "initialize G711 codec")
-	 (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
-	 (loop for i from 0 to 0 do ;;below +max-media-cnt+ do
-	      (ua-log (format nil "Create transport endpoint ~D..." i))
-	      (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*
-							     (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
-							     0 (mem-aptr *med-transport* '(:pointer pjmedia-transport) i)))
+      (ua-log "initialize G711 codec")
+      (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
+      (loop for i from 0 below +max-media-cnt+ do
+	   (ua-log (format nil "Create transport endpoint ~D..." i))
+	   (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*
+							  (null-pointer) (null-pointer) (+ (* i 2) +rtp-port+)
+							  0 (mem-aptr *med-transport* '(:pointer pjmedia-transport) i)))
 
-	      (pjmedia-transport-info-init (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
-	      (pjmedia-transport-get-info (deref (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))
-					  (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
+	   (pjmedia-transport-info-init (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
+	   (pjmedia-transport-get-info (deref (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))
+				       (mem-aptr *med-tpinfo* 'pjmedia-transport-info i))
 
-	      (foreign-funcall "memcpy" :pointer (mem-aref *sock-info* 'pjmedia-sock-info i)
-			       :pointer (foreign-slot-pointer (mem-aref *med-tpinfo* 'pjmedia-transport-info i)
-							      'pjmedia-transport-info 'sock-info)
-			       :int (foreign-type-size 'pjmedia-sock-info)
-			       :void)
-	      (ua-log "    ..done!"))
+	   (foreign-funcall "memcpy" :pointer (mem-aptr *sock-info* 'pjmedia-sock-info i)
+			    :pointer (foreign-slot-pointer (mem-aptr *med-tpinfo* 'pjmedia-transport-info i)
+							   'pjmedia-transport-info 'sock-info)
+			    :int (foreign-type-size 'pjmedia-sock-info)
+			    :void)
+	   (ua-log "    ..done!"))
 
-	 (if uri
-	     (with-foreign-objects ((hostaddr 'pj-sockaddr)
-				    (dst-uri 'pj-str)
-				    (local-uri 'pj-str)
-				    (dlg '(:pointer pjsip-dialog))
-				    (local-sdp '(:pointer pjmedia-sdp-session))
-				    (tdata '(:pointer pjsip-tx-data)))
-	       (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
-		 (ua-log "Unable to retrieve local host IP")
-		 (return-from run-agent nil))
-	       (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
-	       ;;create UAC dialog
-	       (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
-	       (assert-success (pjmedia-endpt-create-sdp (deref *med-endpt*)
-							 (foreign-slot-pointer (mem-ref dlg 'pjsip-dialog) 'pjsip-dialog 'pool)
-							 +max-media-cnt+ *sock-info* local-sdp))
+      (if uri
+	  (with-foreign-objects ((hostaddr 'pj-sockaddr)
+				 (dst-uri 'pj-str)
+				 (local-uri 'pj-str)
+				 (dlg '(:pointer pjsip-dialog))
+				 (local-sdp '(:pointer pjmedia-sdp-session))
+				 (tdata '(:pointer pjsip-tx-data)))
+	    (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
+	      (ua-log "Unable to retrieve local host IP")
+	      (return-from run-agent nil))
+	    (lisp-string-to-pj-str (format nil "<sip:simpleuac@~A:~D>" (pj-str-to-lisp hostaddr) +sip-port+) local-uri)
+	    ;;create UAC dialog
+	    (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
+	    (assert-success (pjmedia-endpt-create-sdp (deref *med-endpt*)
+						      (foreign-slot-pointer (mem-ref dlg 'pjsip-dialog) 'pjsip-dialog 'pool)
+						      +max-media-cnt+ *sock-info* local-sdp))
 
-	       ;;create the INVITE session and pass the above created SDP
-	       (assert-success (pjsip-inv-create-uac dlg local-sdp 0 *inv*))
+	    ;;create the INVITE session and pass the above created SDP
+	    (assert-success (pjsip-inv-create-uac dlg local-sdp 0 *inv*))
 
-	       (assert-success (pjsip-inv-invite (deref *inv*) tdata))
-	       ;;get the ball rolling over the net
-	       (assert-success (pjsip-inv-send-msg (deref *inv*) tdata)))
-	     (ua-log "Ready to accept incoming calls.."))
+	    (assert-success (pjsip-inv-invite (deref *inv*) tdata))
+	    ;;get the ball rolling over the net
+	    (assert-success (pjsip-inv-send-msg (deref *inv*) tdata)))
+	  (ua-log "Ready to accept incoming calls.."))
       
-	 (loop until *complete* do
-	      (with-foreign-object (timeout 'pj-time-val)
-		(setf (foreign-slot-value timeout 'pj-time-val 'sec) 0
-		      (foreign-slot-value timeout 'pj-time-val 'msec) 10)
-		(pjsip-endpt-handle-events (deref *endpt*) timeout)))
+      (loop until *complete* do
+	   (with-foreign-object (timeout 'pj-time-val)
+	     (setf (foreign-slot-value timeout 'pj-time-val 'sec) 0
+		   (foreign-slot-value timeout 'pj-time-val 'msec) 10)
+	     (pjsip-endpt-handle-events (deref *endpt*) timeout)))
+    (ua-log "Shutting down..")
+    (unless (null-pointer-p (deref *med-stream*))
+      (pjmedia-stream-destroy (deref *med-stream*)))
+    
+    ;;destroy media transports, deinit endpoints..
+    (unwind-protect (loop for i from 0 below +max-media-cnt+ do
+			 (unless (null-pointer-p (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))
+			   (pjmedia-transport-close (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))))
+      ;;failing that, at least close SIP sockets here
+      (unless (pj-success (pjsip-tpmgr-destroy (foreign-slot-value (deref *endpt*) 'pjsip-endpoint 'transport-mgr)))
+	(ua-log "Unable to shut down the transport!")))
+    
+    (unless (null-pointer-p (deref *med-endpt*))
+      (pjmedia-endpt-destroy (deref *med-endpt*)))
+    
+    (unless (null-pointer-p (deref *endpt*))
+      (pjsip-endpt-destroy (deref *endpt*)))
+    
+    ;;release pool
+    (unless (null-pointer-p (mem-ref pool-ptr :pointer))
+      (pj-pool-release (mem-ref pool-ptr :pointer))))
 
-	 (ua-log "Shutting down..")
-	 (unless (null-pointer-p (deref *med-stream*))
-	   (pjmedia-stream-destroy (deref *med-stream*)))
-
-	 ;;destroy media transports, deinit endpoints..
-	 (loop for i from 0 below +max-media-cnt+ do
-	      (unless (null-pointer-p (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))
-		(pjmedia-transport-close (mem-aptr *med-transport* '(:pointer pjmedia-transport) i))))
-
-	 (unless (null-pointer-p (deref *med-endpt*))
-	   (pjmedia-endpt-destroy (deref *med-endpt*)))
-
-	 (unless (null-pointer-p (deref *endpt*))
-	   (pjsip-endpt-destroy (deref *endpt*)))
-
-	 ;;release pool
-	 (unless (null-pointer-p (mem-ref pool-ptr :pointer))
-	   (pj-pool-release (mem-ref pool-ptr :pointer))))
-    ;;close sockets here etc on unwind
-    (unless (pj-success (pjsip-tpmgr-destroy (foreign-slot-value (deref *endpt*) 'pjsip-endpoint 'transport-mgr)))
-      (ua-log "Unable to shut down the transport!")))
   (ua-log "User Agent Terminated.")
-  t)
+  t))
 
