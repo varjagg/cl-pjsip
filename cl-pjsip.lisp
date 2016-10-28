@@ -1370,7 +1370,7 @@
 
 (defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer pjmedia-endpt)))
 
-(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer pjmedia-endpt)) (af :int) (name :string) (addr pj-str)
+(defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer pjmedia-endpt)) (af :int) (name :string) (addr (:pointer pj-str))
 	 (port :int) (options :uint) (p-tp (:pointer (:pointer pjmedia-transport))))
 
 (defcfun "pjsip_dlg_create_uac" pj-status (ua (:pointer pjsip-user-agent)) (local-uri (:pointer pj-str))
