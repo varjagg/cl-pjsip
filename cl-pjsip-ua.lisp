@@ -121,11 +121,11 @@
 
 (defcallback logging-on-rx-msg pj-bool ((rdata (:pointer pjsip-rx-data)))
   (ua-log (format nil "RX ~A:~% ~A~% --end-of-message--" (pjsip-rx-data-get-info rdata)
-		  (foreign-slot-value (pjsip-rx-data-msg-info rdata) 'rx-data-msg-info 'msg-buf))))
+		  (foreign-slot-value (foreign-slot-pointer rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg-buf))))
 
 (defcallback logging-on-tx-msg pj-bool ((tdata (:pointer pjsip-tx-data)))
   (ua-log (format nil "TX ~A:~% ~A~% --end-of-message--" (pjsip-tx-data-get-info tdata)
-		  (pjsip-tx-data-msg tdata))))
+		  (deref (pjsip-tx-data-msg tdata)))))
 
 (defun init ()
   (load-pjsip-libraries)
@@ -136,9 +136,9 @@
 	  id -1
 	  on-rx-request (callback on-rx-request)))
 
-  (with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request-on-tx-response) *msg-logger* pjsip-module)
+  (with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request on-tx-response) *msg-logger* pjsip-module)
     (lisp-string-to-pj-str "mod-msg-log" name)
-    (setf priority (1- (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application))
+    (setf priority (1- (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-transport-layer))
 	  id -1
 	  on-rx-request (callback logging-on-rx-msg)
 	  on-tx-request (callback logging-on-tx-msg)
