@@ -194,6 +194,7 @@
 				    (pjmedia-pia-spf info)
 				    (pjmedia-pia-bits info)
 				    0 *snd-port*))
+
 	 (pjmedia-snd-port-connect (deref *snd-port*) (deref media-port)))))
 
 (defun run-agent (&optional uri) 
@@ -290,6 +291,10 @@
 		      (foreign-slot-value timeout 'pj-time-val 'msec) 10)
 		(pjsip-endpt-handle-events (deref *endpt*) timeout))))
     (ua-log "Shutting down..")
+
+    (unless (null-pointer-p (deref *snd-port*))
+      (pjmedia-snd-port-destroy (deref *snd-port*)))
+    
     (unless (null-pointer-p (deref *med-stream*))
       (pjmedia-stream-destroy (deref *med-stream*)))
     
