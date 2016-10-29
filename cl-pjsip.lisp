@@ -1206,7 +1206,7 @@
   (dst-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
   (dst-port :int))
 
-(defcstruct pjsip-tx-data
+(defcstruct (pjsip-tx-data :conc-name pjsip-tx-data-)
   (list (:struct pj-list))
   (pool (:pointer (:struct pj-pool)))
   (obj-name :char :count 32) ;MAX_OBJ_NAME
@@ -1422,6 +1422,10 @@
 (defcfun "pjmedia_aud_subsys_shutdown" :void)
 
 (defcfun "bzero" :void (s (:pointer :void)) (n size))
+
+(defcfun "pjsip_rx_data_get_info" (:pointer :char) (rdata (:pointer pjsip-rx-data)))
+
+(defcfun "pjsip_tx_data_get_info" (:pointer :char) (tdata (:pointer pjsip-tx-data)))
 
 ;;; Implementing these as PJSIP guys made them inlined in C..
 (defun pjmedia-endpt-create (pf ioqueue worker-cnt p-endpt)
