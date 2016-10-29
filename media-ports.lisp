@@ -1,5 +1,9 @@
 (in-package #:cl-pjsip)
 
+(defconstant +pjmedia-aud-default-capture-dev+ -1)
+(defconstant +pjmedia-aud-default-playback-dev+ -2)
+(defconstant +pjmedia-aud-invalid-dev+ +3)
+
 (defcstruct pjmedia-clock-src
   (media-type pjmedia-type)
   (clock-rate :uint)
