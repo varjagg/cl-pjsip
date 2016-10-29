@@ -19,6 +19,7 @@
 ;;(defvar *snd-port* (null-pointer))
 
 (defvar *mod-simpleua* (foreign-alloc 'pjsip-module))
+(defvar *msg-logger* (foreign-alloc 'pjsip-module))
 
 (defun deref (var)
   (mem-ref var :pointer))
@@ -118,6 +119,14 @@
 	     (return-from on-rx-request t)))))
   t)
 
+(defcallback logging-on-rx-msg pj-bool ((rdata (:pointer pjsip-rx-data)))
+  (ua-log (format nil "RX ~A:~% ~A~% --end-of-message--" (pjsip-rx-data-get-info rdata)
+		  (foreign-slot-value (pjsip-rx-data-msg-info rdata) 'rx-data-msg-info 'msg-buf))))
+
+(defcallback logging-on-tx-msg pj-bool ((tdata (:pointer pjsip-tx-data)))
+  (ua-log (format nil "TX ~A:~% ~A~% --end-of-message--" (pjsip-tx-data-get-info tdata)
+		  (pjsip-tx-data-msg tdata))))
+
 (defun init ()
   (load-pjsip-libraries)
   (foreign-funcall "bzero" :pointer *mod-simpleua* :int (foreign-type-size 'pjsip-module) :void)
@@ -125,7 +134,16 @@
     (lisp-string-to-pj-str "mod-simpleua" name)
     (setf priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
 	  id -1
-	  on-rx-request (callback on-rx-request))))
+	  on-rx-request (callback on-rx-request)))
+
+  (with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request-on-tx-response) *msg-logger* pjsip-module)
+    (lisp-string-to-pj-str "mod-msg-log" name)
+    (setf priority (1- (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application))
+	  id -1
+	  on-rx-request (callback logging-on-rx-msg)
+	  on-tx-request (callback logging-on-tx-msg)
+	  on-rx-response (callback logging-on-rx-msg)
+	  on-tx-response (callback logging-on-tx-msg))))
 
 (defcallback call-on-state-changed :void ((inv (:pointer pjsip-inv-session)) (e (:pointer pjsip-event)))
   (declare (ignorable e))
@@ -201,7 +219,9 @@
 		   on-media-update (callback call-on-media-update))
 	     (assert-success (pjsip-inv-usage-init (deref *endpt*) inv-cb))))
 	 (assert-success (pjsip-100rel-init-module (deref *endpt*)))
+
 	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
+	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
 
 	 (ua-log "Initialize media endpoint")
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
