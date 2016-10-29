@@ -90,7 +90,8 @@
   ;;pjsip's own callbackery, we're not going to disturb this
   (block-alloc :pointer)
   (block-free :pointer)
-  (callback :pointer))
+  (callback :pointer)
+  (flags :uint))
 
 (defctype pj-pool-factory-policy (:struct pj-pool-factory-policy))
 
@@ -105,24 +106,45 @@
 
 (defctype pj-pool-factory (:struct pj-pool-factory))
 
+#|
 (defcstruct pj-pool-mem
   (next :pointer))
 
 (defctype pj-pool-mem (:struct pj-pool-mem))
 
+;; pool_alt.h definitionx
 (defcstruct pj-pool
   (first-mem (:pointer (:struct pj-pool-mem)))
   (factory (:pointer (:struct pj-pool-factory)))
   (obj-name :char :count 32)
   (cb :pointer)) ;callback
-
-(defctype pj-pool (:struct pj-pool))
+|#
 
 (defcstruct pj-list
   (prev (:pointer :void))
   (next (:pointer :void)))
 
 (defctype pj-list (:struct pj-list))
+
+(defcstruct pj-pool-block
+  (list pj-list)
+  (buf (:pointer :uchar))
+  (cur (:pointer :uchar))
+  (end (:pointer :uchar)))
+
+(defctype pj-pool-block (:struct pj-pool-block))
+
+(defcstruct pj-pool
+  (list pj-list)
+  (obj-name :char :count 32) ;PJ_MAX_OBJ_NAME
+  (factory (:pointer pj-pool-factory))
+  (factory-data (:pointer :void))
+  (cpacity pj-size)
+  (increment-size pj-size)
+  (block-list pj-pool-block)
+  (callback :pointer))
+
+(defctype pj-pool (:struct pj-pool))
 
 (defcstruct pj-caching-pool
   (factory (:struct pj-pool-factory))
@@ -290,9 +312,7 @@
 (defctype pjsip-ua-init-param (:struct pjsip-ua-init-param))
 
 (defcstruct pjsip-module
-  ;;pj-list really via c macrology originally
-  (prev (:pointer :void))
-  (next (:pointer :void))
+  (list pj-list)
   (name pj-str)
   (id :int)
   (priority :int)
@@ -427,14 +447,14 @@
 (defcstruct pjmedia-endpt
   (pool (:pointer (:struct pj-pool)))
   (pf (:pointer (:struct pj-pool-factory)))
-  (codec-mgr (:pointer (:struct pjmedia-codec-mgr)))
+  (codec-mgr (:struct pjmedia-codec-mgr))
   (ioqueue :pointer) ;dangling
   (own-ioqueue pj-bool)
   (thread-cnt :uint)
   (thread :pointer :count 2) ;max-threads
   (quit-flag pj-bool)
   (has-telephone-event pj-bool)
-  (exit-cb-ost (:struct exit-cb)))
+  (exit-cb-list (:struct exit-cb)))
 
 (defctype pjmedia-endpt (:struct pjmedia-endpt))
 
@@ -482,7 +502,7 @@
 (defcstruct pjmedia-transport-specific-info
   (type pjmedia-transport-type)
   (cbsize :int)
-  (buffer :char :count 144)) ;36 * sizeof(long)
+  (buffer :long :count 36)) ;36 * sizeof(long)
 
 (defctype pjmedia-transport-specific-info (:struct pjmedia-transport-specific-info))
 
