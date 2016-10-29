@@ -80,3 +80,7 @@
 	 (clock-rate :uint) (channel-count :uint) (samples-per-frame :uint) (bits-per-sample :uint) (options :uint)
 	 (p-port (:pointer (:pointer pjmedia-snd-port))))
 
+(defcfun "pjmedia_snd_port_connect" pj-status (snd-port (:pointer pjmedia-snd-port)) (port (:pointer pjmedia-port)))
+
+(defcfun "pjmedia_snd_port_destroy" :void (snd-port (:pointer pjmedia-snd-port)))
+
