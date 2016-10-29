@@ -1146,6 +1146,7 @@
   (info (:struct pjmedia-port-info))
   (port-data (:struct port-port-data))
   ;;callbackery
+  (get-clock-src :pointer)
   (put-frame :pointer)
   (get-frame :pointer)
   (on-destroy :pointer))
@@ -1412,14 +1413,10 @@
 
 (defcfun "pjsip_tpmgr_destroy" pj-status (mgr :pointer))
 
-(defcfun "pjmedia_aud_subsys_init" pj-status (pf (:pointer pj-pool-factory)))
-
 (defcfun "pjmedia_endpt_create2" pj-status (pf (:pointer pj-pool-factory)) (ioqueue :pointer) (worker-cnt :uint)
 	 (p-endpt (:pointer (:pointer pjmedia-endpt))))
 
 (defcfun "pjmedia_endpt_destroy2" pj-status (endpt (:pointer pjmedia-endpt)))
-
-(defcfun "pjmedia_aud_subsys_shutdown" :void)
 
 (defcfun "bzero" :void (s (:pointer :void)) (n size))
 
