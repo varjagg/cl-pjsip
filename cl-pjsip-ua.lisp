@@ -16,7 +16,7 @@
 ;;;Call variables
 (defparameter *inv* (foreign-alloc '(:pointer pjsip-inv-session) :initial-contents (list (null-pointer))))
 (defvar *med-stream* (foreign-alloc '(:pointer pjmedia-stream) :initial-contents (list (null-pointer))))
-;;(defvar *snd-port* (null-pointer))
+(defvar *snd-port* (foreign-alloc '(:pointer pjmedia-snd-port)))
 
 (defvar *mod-simpleua* (foreign-alloc 'pjsip-module))
 (defvar *msg-logger* (foreign-alloc 'pjsip-module))
@@ -185,9 +185,16 @@
 	   (return-from call-on-media-update))
 	 
 	 (pjmedia-stream-get-port (deref *med-stream*) media-port)
-	 
-	 ;;could be forwarding media stream to audio dev here
-	 )))
+
+	 (ua-log "Creating sound port")
+	 (let ((info (foreign-slot-value (deref media-port) 'pjmedia-port 'info)))
+	   (pjmedia-snd-port-create (inv-session-pool inv) +pjmedia-aud-default-capture-dev+ +pjmedia-aud-default-playback-dev+
+				    (pjmedia-pia-srate info)
+				    (pjmedia-pia-ccnt info)
+				    (pjmedia-pia-spf info)
+				    (pjmedia-pia-bits info)
+				    0 *snd-port*))
+	 (pjmedia-snd-port-connect (deref *snd-port*) (deref media-port)))))
 
 (defun run-agent (&optional uri) 
   (unwind-protect			;to unwind and protect!
