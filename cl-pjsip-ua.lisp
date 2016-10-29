@@ -152,12 +152,12 @@
 	 (pjmedia-sdp-neg-get-active-remote (inv-session-neg inv) remote-sdp)
 	 
 	 (unless (pj-success (pjmedia-stream-info-from-sdp stream-info (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
-							   (deref *med-endpt*) local-sdp remote-sdp 0))
+							   (deref *med-endpt*) (deref local-sdp) (deref remote-sdp) 0))
 	   (ua-log "Unable to create audio stream info!")
 	   (return-from call-on-media-update))
 	 
 	 (unless (pj-success (pjmedia-stream-create (deref *med-endpt*) (foreign-slot-value (inv-session-dlg inv) 'pjsip-dialog 'pool)
-						    stream-info (mem-aref *med-transport* :pointer 0)
+						    stream-info (deref (mem-aptr *med-transport* :pointer 0))
 						    (null-pointer) *med-stream*))
 	   (ua-log "Unable to create audio stream info!")
 	   (return-from call-on-media-update))
