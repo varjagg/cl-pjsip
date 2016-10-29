@@ -877,9 +877,9 @@
 
 (defcstruct rx-data-pkt-info
   (timestamp (:struct pj-time-val))
-  (packet :char :count 4000) ;PJSIP_MAX_PKT_LEN
+  (packet :char :count 2000) ;PJSIP_MAX_PKT_LEN?
   (zero :uint32)
-  (len :long)
+  (len size)
   (src-addr (:union pj-sockaddr))
   (src-addr-len :int)
   (src-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
@@ -1017,7 +1017,7 @@
   (clen (:pointer pjsip-clen-hdr))
   (require (:pointer pjsip-require-hdr))
   (supported (:pointer pjsip-supported-hdr))
-  (parse-err (:pointer (:struct pjsip-parser-err-report))))
+  (parse-err (:struct pjsip-parser-err-report)))
 
 (defctype rx-data-msg-info (:struct rx-data-msg-info))
 

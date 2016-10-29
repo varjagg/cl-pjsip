@@ -16,7 +16,7 @@
 ;;;Call variables
 (defparameter *inv* (foreign-alloc '(:pointer pjsip-inv-session) :initial-contents (list (null-pointer))))
 (defvar *med-stream* (foreign-alloc '(:pointer pjmedia-stream) :initial-contents (list (null-pointer))))
-(defvar *snd-port* (foreign-alloc '(:pointer pjmedia-snd-port)))
+(defvar *snd-port* (foreign-alloc '(:pointer pjmedia-snd-port) :initial-contents (list (null-pointer))))
 
 (defvar *mod-simpleua* (foreign-alloc 'pjsip-module))
 (defvar *msg-logger* (foreign-alloc 'pjsip-module))
@@ -229,7 +229,7 @@
 	 (assert-success (pjsip-100rel-init-module (deref *endpt*)))
 
 	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
-	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
+	;; (assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
 
 	 (ua-log "Initialize media endpoint")
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
