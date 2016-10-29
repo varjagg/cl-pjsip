@@ -153,9 +153,9 @@
   (used-count pj-size)
   (used-size pj-size)
   (peak-used-size pj-size)
-  (free-list (:struct pj-list) :count 16)
+  (free-list (:struct pj-list) :count 16) ;PJ_CACHING_POOL_ARRAY_SIZE
   (used-list (:struct pj-list))
-  (pool-buf :char :count 256)
+  (pool-buf size :count 64) ;256 * sizeof(size_t) / 4
   (lock :pointer))
 
 (defctype pj-caching-pool (:struct pj-caching-pool))
@@ -208,9 +208,7 @@
   :pjsip_h_other)
 
 (defcstruct pjsip-hdr
-  ;;pj-list really via c macrology originally
-  (prev (:pointer :void))
-  (next (:pointer :void))
+  (list pj-list)
   (type pjsip-hdr-e)
   (name pj-str)
   (sname pj-str)
@@ -222,11 +220,20 @@
   (s6-addr :uint8 :count 32)
   (u6-addr32 :uint32 :count 4))
 
-(defcstruct pj-sockaddr-in6
+;;;on Darwin
+#+nil(defcstruct pj-sockaddr-in6
   (sin6-zero-len :uint8)
   (sin6-family :uint8)
   ;;assume zero len
   ;;(sin6-family :uint16)
+  (sin6-port :uint16)
+  (sin6-flowinfo :uint32)
+  (sin6-addr (:union pj-in6-addr))
+  (sin6-scope-id :uint32))
+
+;;; Linux
+(defcstruct pj-sockaddr-in6
+  (sin6-family :uint16)
   (sin6-port :uint16)
   (sin6-flowinfo :uint32)
   (sin6-addr (:union pj-in6-addr))
@@ -239,20 +246,32 @@
 
 (defctype pj-in-addr (:struct pj-in-addr))
 
-(defcstruct pj-sockaddr-in
+;;;on Darwin
+#+nil(defcstruct pj-sockaddr-in
   (sin-zero-len :uint8)
   (sin-family :uint8)
   ;;assume zero len
-  ;;(sin6-family :uint16)
+  ;;(sin-family :uint16)
+  (sin-port :uint16)
+  (sin-addr (:struct pj-in-addr))
+  (sin-zero :char :count 8))
+
+;;; Linux
+(defcstruct pj-sockaddr-in
+  (sin-family :uint16)
   (sin-port :uint16)
   (sin-addr (:struct pj-in-addr))
   (sin-zero :char :count 8))
 
 (defctype pj-sockaddr-in (:struct pj-sockaddr-in))
 
-(defcstruct pj-addr-hdr
+;;; Darwin
+#+nil(defcstruct pj-addr-hdr
   (sa-zero-len :uint8)
   (sa-family :uint8))
+
+(defcstruct pj-addr-hdr
+  (sa-family :uint16))
 
 (defctype pj-addr-hdr (:struct pj-addr-hdr))
 
@@ -429,6 +448,7 @@
   (key pjsip-transport-key)
   (type-name (:pointer :char))
   (flag :uint)
+  (info (:pointer :char))
   (addr-len :int)
   (local-addr pj-sockaddr)
   (local-name pjsip-host-port)
