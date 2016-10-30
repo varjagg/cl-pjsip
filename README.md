@@ -1,12 +1,13 @@
-# cl-pjsip
-Common Lisp wrapper for PJSIP library.
+# CL-PJSIP
+
+Common Lisp wrapper for [PJSIP](http://www.pjsip.org/) multimedia communication library.
 
 Work in progress. Current goals:
 
 * Create FFI bindings for practically viable subset of PJSIP [done]
 * Create a simple SIP user agent capable of handling basic sessions and establishing media streams [done]
 * Implement more ideomatic Lisp application logic concepts
-* Add various media ports (audio [done] , file, null..)
+* Add various media ports (audio [done], file, null..)
 
 Still in alpha quality. Expect glitches and crashes.
 
@@ -14,7 +15,7 @@ Licensed under the terms of GPL v2 in compliance with PJSIP code it links to.
 
 ## Dependencies
 
-Known to work on CCL 1.11 x64, with PJSIP 2.2.5.
+Known to work on CCL 1.11 x64, with [PJSIP](http://www.pjsip.org/) 2.5.5.
 
 ## Building PJSIP
 
