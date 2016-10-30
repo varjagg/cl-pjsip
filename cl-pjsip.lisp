@@ -1348,6 +1348,7 @@
 (defcfun "pj_log_set_level" :void (log-level :int))
 (defcfun "pj_log_set_log_func" :void (func :pointer))
 (defcfun "pj_log" :void (sender :string) (level :int) (format :string)) ;silently dropping va_list
+(defcfun "pj_log_pop_indent" :void)
 
 (defcfun "pjlib_util_init" pj-status)
 

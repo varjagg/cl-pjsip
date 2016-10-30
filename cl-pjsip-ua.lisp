@@ -308,6 +308,7 @@
       (pjmedia-endpt-destroy (deref *med-endpt*)))
     
     (unless (null-pointer-p (deref *endpt*))
-      (pjsip-endpt-destroy (deref *endpt*))))
+      (pjsip-endpt-destroy (deref *endpt*)))
+    (pj-log-pop-indent))
   t)
 
