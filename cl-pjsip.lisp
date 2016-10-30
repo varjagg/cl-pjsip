@@ -1087,7 +1087,7 @@
 
 (defcstruct pjmedia-stream
   ;;ugly stub for messy struct with bunch of IFDEFs
-  (pad :char :count 4096))
+  (pad :char :count 8192))
 
 (defctype pjmedia-stream (:struct pjmedia-stream))
 
