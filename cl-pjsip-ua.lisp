@@ -2,7 +2,7 @@
 
 (defconstant +sip-port+ 5060)
 (defconstant +rtp-port+ 4000)
-(defconstant +max-media-cnt+ 2)
+(defconstant +max-media-cnt+ 1)
 (defconstant +ivp6_addr_size+ 46)
 
 (defparameter *complete* nil)
@@ -136,6 +136,7 @@
 	  id -1
 	  on-rx-request (callback on-rx-request)))
 
+  (foreign-funcall "bzero" :pointer *msg-logger* :int (foreign-type-size 'pjsip-module) :void)
   (with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request on-tx-response) *msg-logger* pjsip-module)
     (lisp-string-to-pj-str "mod-msg-log" name)
     (setf priority (1- (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-transport-layer))
@@ -187,7 +188,7 @@
 	 (pjmedia-stream-get-port (deref *med-stream*) media-port)
 
 	 (ua-log "Creating sound port")
-	 (let ((info (foreign-slot-value (deref media-port) 'pjmedia-port 'info)))
+	 (let ((info (foreign-slot-pointer (deref media-port) 'pjmedia-port 'info)))
 	   (pjmedia-snd-port-create (inv-session-pool inv) +pjmedia-aud-default-capture-dev+ +pjmedia-aud-default-playback-dev+
 				    (pjmedia-pia-srate info)
 				    (pjmedia-pia-ccnt info)
@@ -229,7 +230,7 @@
 	 (assert-success (pjsip-100rel-init-module (deref *endpt*)))
 
 	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
-	;; (assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
+	 ;;(assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
 
 	 (ua-log "Initialize media endpoint")
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))
@@ -253,7 +254,6 @@
 			       :int (foreign-type-size 'pjmedia-sock-info)
 			       :void)
 	      (ua-log "    ..done!"))
-
 	 (if uri
 	     (with-foreign-objects ((hostaddr 'pj-sockaddr)
 				    (hostip :char +ivp6_addr_size+)
@@ -271,13 +271,14 @@
 		(format nil "<sip:simpleuac@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+)
 		local-uri)
 	       (lisp-string-to-pj-str uri dst-uri)
-	       ;;create UAC dialog
+	       (ua-log "Creating UAC dialog")
 	       (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
+	       (ua-log "Creating SDP endpoint")
 	       (assert-success (pjmedia-endpt-create-sdp (deref *med-endpt*)
 							 (foreign-slot-value (deref dlg) 'pjsip-dialog 'pool)
 							 +max-media-cnt+ *sock-info* local-sdp))
 
-	       ;;create the INVITE session and pass the above created SDP
+	       (ua-log "Creating INVITE session")
 	       (assert-success (pjsip-inv-create-uac (deref dlg) (deref local-sdp) 0 *inv*))
 
 	       (assert-success (pjsip-inv-invite (deref *inv*) tdata))
