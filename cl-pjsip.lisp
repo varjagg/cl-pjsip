@@ -283,7 +283,7 @@
 (defctype pj-sockaddr (:union pj-sockaddr))
 
 (defcstruct pjsip-host-port
-  (host :string)
+  (host pj-str)
   (port :int))
 
 (defctype pjsip-host-port (:struct pjsip-host-port))
@@ -445,22 +445,32 @@
   (tracing pj-bool)
   (is-shutdown pj-bool)
   (is-destroying pj-bool)
+
   (key pjsip-transport-key)
+
   (type-name (:pointer :char))
   (flag :uint)
   (info (:pointer :char))
+
   (addr-len :int)
   (local-addr pj-sockaddr)
   (local-name pjsip-host-port)
   (remote-name pjsip-host-port)
   (dir pjsip-transport-dir)
+
   (endpt (:pointer pjsip-endpoint))
   (tpmgr :pointer) ;dangling
   (factory :pointer) ;dangling
+
   (idle-timer pj-timer-entry)
   (last-recv-ts pj-timestamp)
   (last-recv-len pj-size)
-  (data (:pointer :void)))
+
+  (data (:pointer :void))
+
+  (send-msg :pointer)
+  (do-shutdown :pointer)
+  (destroy :pointer))
 
 (defctype pjsip-transport (:struct pjsip-transport))
 
@@ -471,7 +481,7 @@
   (ioqueue :pointer) ;dangling
   (own-ioqueue pj-bool)
   (thread-cnt :uint)
-  (thread :pointer :count 2) ;max-threads
+  (thread :pointer :count 16) ;MAX_THREADS
   (quit-flag pj-bool)
   (has-telephone-event pj-bool)
   (exit-cb-list (:struct exit-cb)))
@@ -792,7 +802,7 @@
   (next (:pointer :void))
   (obj-name :char :count 32)
   (pool (:pointer (:struct pj-pool)))
-  (mutex (:pointer :void))
+  (mutex :pointer) ;dangling
   (ua (:pointer pjsip-user-agent))
   (endpt (:pointer (:struct pjsip-endpoint)))
   (dlg-set (:pointer :void))
@@ -816,9 +826,9 @@
   (tpsel (:struct pjsip-tpselector))
   (usage-cnt :uint)
   (usage (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
-  (mod-data :pointer :count 32)
+  (mod-data (:pointer :void) :count 32)
   (via-addr (:struct pjsip-host-port))
-  (via-tp :pointer))
+  (via-tp (:pointer :void)))
 
 (defctype pjsip-dialog (:struct pjsip-dialog))
 
@@ -1203,9 +1213,9 @@
 (defctype pjsip-tx-data-op-key (:struct pjsip-tx-data-op-key))
 
 (defcstruct pjsip-buffer
-  (start :char)
-  (cur :char)
-  (end :char))
+  (start (:pointer :char))
+  (cur (:pointer :char))
+  (end (:pointer :char)))
 
 (defctype pjsip-buffer (:struct pjsip-buffer))
 
