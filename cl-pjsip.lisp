@@ -776,9 +776,9 @@
   :pjsip-tpselector-listener)
 
 (defcunion selector-u
-  (transport :pointer)
+  (transport (:pointer pjsip-transport))
   (listener :pointer)
-  (ptr :pointer))
+  (ptr (:pointer :void)))
 
 (defcstruct pjsip-tpselector
   (type pjsip-tpselector-type)
@@ -888,9 +888,10 @@
   (last-answer :pointer) ;dangling
   (last-ack :pointer) ;dangling
   (last-ack-cseq :int32)
-  (mod-data :pointer :count 32) ;PJSIP_MAX_MODULE
+  (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
   (timer :pointer) ;dangling
-  (following-fork pj-bool))
+  (following-fork pj-bool)
+  (ref-cnt :pointer)) ;dangling
 
 (defctype pjsip-inv-session (:struct pjsip-inv-session))
 
@@ -917,7 +918,7 @@
 
 (defcstruct rx-data-pkt-info
   (timestamp (:struct pj-time-val))
-  (packet :char :count 2000) ;PJSIP_MAX_PKT_LEN?
+  (packet :char :count 4000) ;PJSIP_MAX_PKT_LEN
   (zero :uint32)
   (len size)
   (src-addr (:union pj-sockaddr))
