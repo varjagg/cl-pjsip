@@ -21,6 +21,17 @@
 (defvar *mod-simpleua* (foreign-alloc 'pjsip-module))
 (defvar *msg-logger* (foreign-alloc 'pjsip-module))
 
+(defclass sip-agent ()
+  ((endpt :accessor endpt :initform (foreign-alloc '(:pointer pjsip-endpoint) :initial-contents (list (null-pointer))))
+   (cp :accessor cp :initform (foreign-alloc 'pj-caching-pool))
+   (med-endpt :accessor med-endpt :initform (foreign-alloc '(:pointer pjmedia-endpt) :initial-contents (list (null-pointer))))
+   (med-tpinfo :accessor med-tpinfo :initform (foreign-alloc 'pjmedia-transport-info :count +max-media-cnt+))
+   (med-transport :accessor med-transport :initform (foreign-alloc '(:pointer pjmedia-transport) :count +max-media-cnt+
+								   :initial-contents (loop repeat +max-media-cnt+ collecting (null-pointer))))
+   (sock-info :accessor sock-info :initform (foreign-alloc 'pjmedia-sock-info :count +max-media-cnt+))
+   (inv :accessor inv :initform (foreign-alloc '(:pointer pjsip-inv-session) :initial-contents (list (null-pointer))))
+   (med-stream :accessor med-stream :initform (foreign-alloc '(:pointer pjmedia-snd-port) :initial-contents (list (null-pointer))))))
+
 (defun deref (var)
   (mem-ref var :pointer))
 
@@ -52,14 +63,12 @@
 			 (hostip :char +ivp6_addr_size+)
 			 (local-sdp '(:pointer pjmedia-sdp-session))
 			 (tdata '(:pointer pjsip-tx-data)))
-    (let* ((req (foreign-slot-value
-		  (foreign-slot-value 
-		   (getf (pjsip-rx-data-msg-info (deref rdata)) 'msg)
-		   'pjsip-msg 'line)
-		  'msg-line 'req))
+    (let* ((req (getf
+		 (pjsip-msg-line 
+		  (getf (pjsip-rx-data-msg-info (deref rdata)) 'msg)) 'req))
 	   (id-val (foreign-slot-value
 		    (foreign-slot-value
-		     (print req)
+		     req
 		     'pjsip-request-line 'method)
 		    'pjsip-method 'id)))
       (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
