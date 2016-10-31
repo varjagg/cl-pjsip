@@ -187,7 +187,7 @@
 	 
 	 (pjmedia-stream-get-port (deref *med-stream*) media-port)
 
-	 (ua-log "Creating sound port")
+ 	 (ua-log "Creating sound port")
 	 (let ((info (foreign-slot-pointer (deref media-port) 'pjmedia-port 'info)))
 	   (pjmedia-snd-port-create (inv-session-pool inv) +pjmedia-aud-default-capture-dev+ +pjmedia-aud-default-playback-dev+
 				    (pjmedia-pia-srate info)
@@ -230,7 +230,7 @@
 	 (assert-success (pjsip-100rel-init-module (deref *endpt*)))
 
 	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *mod-simpleua*))
-	 ;;(assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
+	 (assert-success (pjsip-endpt-register-module (deref *endpt*) *msg-logger*))
 
 	 (ua-log "Initialize media endpoint")
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) 1 *med-endpt*))

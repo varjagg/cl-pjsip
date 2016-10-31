@@ -1052,7 +1052,7 @@
 (defctype pjsip-parser-err-report (:struct pjsip-parser-err-report))
 
 (defcstruct rx-data-msg-info
-  (msg-buf :string)
+  (msg-buf (:pointer :char))
   (len :int)
   (msg (:pointer (:struct pjsip-msg)))
   (info (:pointer :char))
