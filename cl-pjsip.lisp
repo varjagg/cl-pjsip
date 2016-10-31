@@ -973,7 +973,7 @@
 
 (defctype pjsip-method (:struct pjsip-method))
 
-(defcstruct pjsip-request-line
+(defcstruct (pjsip-request-line :conc-name pjsip-request-line-)
   (method (:struct pjsip-method))
   (uri (:pointer (:struct pjsip-uri))))
 
@@ -989,7 +989,7 @@
   (req (:struct pjsip-request-line))
   (status (:struct pjsip-status-line)))
 
-(defcstruct pjsip-msg
+(defcstruct (pjsip-msg :conc-name pjsip-msg-)
   (type pjsip-msg-type-e)
   (line (:union msg-line))
   (hdr (:struct pjsip-hdr))
