@@ -747,13 +747,12 @@
   :pjsip-auth-qop-unknown)
 
 (defcstruct pjsip-cached-auth
-  ;;pj-list really via c macrology originally
-  (prev (:pointer :void))
-  (next (:pointer :void))
+  (list pj-list)
   (pool (:pointer (:struct pj-pool)))
   (realm pj-str)
   (is-proxy pj-bool)
   (qop-value pjsip-auth-qop-type)
+  (stale-cnt :uint)
   (nc :uint32) ;PJSIP_AUTH_QOP_SUPPORT = 1
   (cnonce pj-str) ;PJSIP_AUTH_QOP_SUPPORT = 1
   (last-chal (:pointer (:struct pjsip-www-authenticate-hdr)))
@@ -900,7 +899,8 @@
   (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
   (timer :pointer) ;dangling
   (following-fork pj-bool)
-  (ref-cnt :pointer)) ;dangling
+  ;;(ref-cnt :pointer);dangling
+  ) 
 
 (defctype pjsip-inv-session (:struct pjsip-inv-session))
 
@@ -1022,9 +1022,11 @@
   (method (:struct pjsip-method)))
 
 (defcstruct pjsip-ctype-hdr
+  (hdr (:struct pjsip-hdr))
   (media (:struct pjsip-media-type)))
 
 (defcstruct pjsip-clen-hdr
+  (hdr (:struct pjsip-hdr))
   (len :int))
 
 (defctype pjsip-ctype-hdr (:struct pjsip-ctype-hdr))
@@ -1090,9 +1092,45 @@
 
 (defctype pjmedia-stream (:struct pjmedia-stream))
 
+(defcenum pjmedia-tp-proto
+  :pjmedia-tp-proto-none
+  :pjmedia-tp-proto-rtp-avp
+  :pjmedia-tp-proto-rtp-savp
+  :pjmedia-tp-proto-unknown)
+
+(defcenum pjmedia-dir
+  :pjmedia-dir-none
+  (:pjmedia-dir-encoding 1)
+  (:pjmedia-dir-capture 1)
+  (:pjmedia-dir-decoding 2)
+  (:pjmedia-dir-playback 2)
+  (:pjmedia-dir-render 2)
+  (:pjmedia-dir-encoding-decoding 3)
+  (:pjmedia-dir-capture-playback 3)
+  (:pjmedia-dir-capture-render 3))
+
 (defcstruct pjmedia-stream-info
-  ;;ugly stub for messy struct with bunch of IFDEFs
-  (pad :char :count 4096))
+  (type pjmedia-type)
+  (proto pjmedia-tp-proto)
+  (dir pjmedia-dir)
+  (rem-addr pj-sockaddr)
+  (rem-rtcp pj-sockaddr)
+  (fmt pjmedia-codec-info)
+  (param :pointer) ;dangling
+  (tx-pt :uint)
+  (rx-pt :uint)
+  (tx-maxptime :uint)
+  (tx-event-pt :int)
+  (rx-event-pt :int)
+  (ssrc :uint32)
+  (rtp-ts :uint32)
+  (rtp-seq :uint16)
+  (rtp-seq-ts-set :uint8)
+  (jb-init :int)
+  (jb-min-pre :int)
+  (jb-max-pre :int)
+  (jb-max :int)
+  (rtcp-sdes-bye-disabled pj-bool))
 
 (defctype pjmedia-stream-info (:struct pjmedia-stream-info))
 
@@ -1117,17 +1155,6 @@
   (neg-remote-sdp (:pointer (:struct pjmedia-sdp-session))))
 
 (defctype pjmedia-sdp-neg (:struct pjmedia-sdp-neg))
-
-(defcenum pjmedia-dir
-  :pjmedia-dir-none
-  (:pjmedia-dir-encoding 1)
-  (:pjmedia-dir-capture 1)
-  (:pjmedia-dir-decoding 2)
-  (:pjmedia-dir-playback 2)
-  (:pjmedia-dir-render 2)
-  (:pjmedia-dir-encoding-decoding 3)
-  (:pjmedia-dir-capture-playback 3)
-  (:pjmedia-dir-capture-render 3))
 
 (defcenum pjmedia-format-detail-type
   :pjmedia-format-detail-none
