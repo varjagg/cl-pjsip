@@ -246,7 +246,7 @@
 
 	 (ua-log "initialize G711 codec")
 	 (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
-	 ;;(bzero *med-tpinfo* (* (foreign-type-size 'pjmedia-transport-info) +max-media-cnt+))
+	 (bzero *med-tpinfo* (* (foreign-type-size 'pjmedia-transport-info) +max-media-cnt+))
 	 (loop for i from 0 below +max-media-cnt+ do
 	      (ua-log (format nil "Create transport endpoint ~D..." i))
 	      (assert-success (pjmedia-transport-udp-create3 (deref *med-endpt*) *pj-af-inet*

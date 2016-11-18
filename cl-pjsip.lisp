@@ -1516,7 +1516,7 @@
 
 (defun pjmedia-transport-info-init (info)
   ;; we comment bzero out altogher until we find what's going on
-  ;;(bzero info (foreign-type-size 'pjmedia-transport-info))
+  (bzero info (foreign-type-size 'pjmedia-transport-info))
   (setf (foreign-slot-value (foreign-slot-pointer info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtp-sock) +pj-invalid-socket+
 	(foreign-slot-value (foreign-slot-pointer info 'pjmedia-transport-info 'sock-info) 'pjmedia-sock-info 'rtcp-sock) +pj-invalid-socket+))
 
