@@ -139,7 +139,7 @@
   (obj-name :char :count 32) ;PJ_MAX_OBJ_NAME
   (factory (:pointer pj-pool-factory))
   (factory-data (:pointer :void))
-  (cpacity pj-size)
+  (capacity pj-size)
   (increment-size pj-size)
   (block-list pj-pool-block)
   (callback :pointer))
@@ -217,7 +217,7 @@
 (defctype pjsip-hdr (:struct pjsip-hdr))
 
 (defcunion pj-in6-addr
-  (s6-addr :uint8 :count 32)
+  (s6-addr :uint8 :count 16)
   (u6-addr32 :uint32 :count 4))
 
 ;;;on Darwin
@@ -317,12 +317,11 @@
 
 (defctype pj-timer-entry (:struct pj-timer-entry))
 
-(defcstruct pj-timestamp
-  (w1 :uint32)
-  (w2 :uint32)
+(defcunion pj-timestamp
+  (w :uint64) ;lo + hi 32 bit components
   (u64 :uint64))
 
-(defctype pj-timestamp (:struct pj-timestamp))
+(defctype pj-timestamp (:union pj-timestamp))
 
 (defcstruct pjsip-ua-init-param
   ;; yet another callback stub
@@ -643,9 +642,7 @@
 (defctype pjsip-param (:struct pjsip-param))
 
 (defcstruct pjsip-fromto-hdr
-  ;;pj-list really via c macrology originally
-  (prev (:pointer :void))
-  (next (:pointer :void))
+  (hdr pjsip-hdr)
   (uri (:pointer (:struct pjsip-uri)))
   (tag pj-str)
   (other-param (:struct pjsip-param)))
@@ -655,9 +652,7 @@
 (defctype pjsip-to-hdr (:struct pjsip-fromto-hdr))
 
 (defcstruct pjsip-contact-hdr
-  ;;pj-list really via c macrology originally
-  (prev (:pointer :void))
-  (next (:pointer :void))
+  (hdr pjsip-hdr)
   (star :int)
   (uri (:pointer (:struct pjsip-uri)))
   (q1000 :int)
@@ -676,7 +671,11 @@
 
 (defctype pjsip-dlg-party (:struct pjsip-dlg-party))
 
-(defctype pjsip-cid-hdr (:struct pjsip-hdr))
+(defcstruct pjsip-cid-hdr
+  (hdr pjsip-hdr)
+  (id pj-str))
+
+(defctype pjsip-cid-hdr (:struct pjsip-cid-hdr))
 
 (defcstruct pjsip-name-addr
   (vptr :pointer) ;dangling
