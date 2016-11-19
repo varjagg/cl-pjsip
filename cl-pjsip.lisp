@@ -899,7 +899,7 @@
   (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
   (timer :pointer) ;dangling
   (following-fork pj-bool)
-  ;;(ref-cnt :pointer);dangling
+  (ref-cnt :pointer);dangling
   ) 
 
 (defctype pjsip-inv-session (:struct pjsip-inv-session))
