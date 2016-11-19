@@ -63,14 +63,15 @@
 			 (hostip :char +ivp6_addr_size+)
 			 (local-sdp '(:pointer pjmedia-sdp-session))
 			 (tdata '(:pointer pjsip-tx-data)))
-    (let* ((req (getf
-		 (pjsip-msg-line 
-		  (getf (pjsip-rx-data-msg-info (deref rdata)) 'msg)) 'req))
-	   (id-val (foreign-slot-value
+    (let* ((id-val (foreign-slot-value
+		   (foreign-slot-value
 		    (foreign-slot-value
-		     req
-		     'pjsip-request-line 'method)
-		    'pjsip-method 'id)))
+		     (foreign-slot-value 
+		      (deref (foreign-slot-pointer (deref (foreign-slot-pointer rdata 'pjsip-rx-data 'msg-info)) 'rx-data-msg-info 'msg))
+		      'pjsip-msg 'line)
+		     '(:union msg-line) 'req)
+		    'pjsip-request-line 'method)
+		   'pjsip-method 'id)))
       (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 	  (if (not (eql :pjsip-ack-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 	      (progn 
@@ -218,7 +219,7 @@
 	 (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
 	 (let ((endpt-name (machine-instance)))
 	   (ua-log (format nil "Initialize SIP endpoint with name ~A" endpt-name))
-	   (assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) endpt-name *endpt*)))
+	   (assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) *endpt*)))
 	 (with-foreign-object (addr 'pj-sockaddr)
 	   (pj-sockaddr-init *pj-af-inet* addr (null-pointer) +sip-port+) ;;ipv4
 	   (assert-success (pjsip-udp-transport-start (deref *endpt*) (foreign-slot-pointer addr 'pj-sockaddr 'ipv4)
