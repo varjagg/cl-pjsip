@@ -155,7 +155,7 @@
   (peak-used-size pj-size)
   (free-list (:struct pj-list) :count 16) ;PJ_CACHING_POOL_ARRAY_SIZE
   (used-list (:struct pj-list))
-  (pool-buf size :count 64) ;256 * sizeof(size_t) / 4
+  (pool-buf :char :count 512) ;256 * sizeof(size_t) / 4
   (lock :pointer))
 
 (defctype pj-caching-pool (:struct pj-caching-pool))
