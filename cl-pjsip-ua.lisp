@@ -141,13 +141,14 @@
   (load-pjsip-libraries)
   (foreign-funcall "bzero" :pointer *mod-simpleua* :int (foreign-type-size 'pjsip-module) :void)
   (with-foreign-slots ((name id priority on-rx-request) *mod-simpleua* pjsip-module)
-    (lisp-string-to-pj-str "mod-simpleua" name)
+    #+nil(lisp-string-to-pj-str "mod-simpleua" (foreign-slot-pointer *mod-simpleua* 'pjsip-module 'name))
+    (pj-strcpy2 name "mod-simpleua")
     (setf priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
 	  id -1
 	  on-rx-request (callback on-rx-request)))
 
   (foreign-funcall "bzero" :pointer *msg-logger* :int (foreign-type-size 'pjsip-module) :void)
-  (with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request on-tx-response) *msg-logger* pjsip-module)
+  #+nil(with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request on-tx-response) *msg-logger* pjsip-module)
     (lisp-string-to-pj-str "mod-msg-log" name)
     (setf priority (1- (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-transport-layer))
 	  id -1
