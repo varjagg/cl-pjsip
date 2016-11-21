@@ -56,7 +56,8 @@
 (defun lisp-string-to-pj-str (string pjstring)
   "Map Lisp strings to pj_str"
   (check-type string string)
-  (with-foreign-slots ((ptr slen) pjstring pj-str)
+  (pj-strcpy2 pjstring string)
+  #+nil(with-foreign-slots ((ptr slen) pjstring pj-str)
     (setf slen (length string))
     (setf ptr (foreign-alloc :char :count slen))
     (loop for i from 0 below slen do
@@ -1370,6 +1371,9 @@
 
 (defcvar "PJ_AF_INET" :uint16)
 
+(defcfun "pj_str" (:pointer pj-str) (str :string))
+(defcfun "pj_strcpy2" (:pointer pj-str) (pstr (:pointer pj-str)) (cstr :string))
+(defcfun "pj_strdup2" (:pointer pj-str) (pool (:pointer pj-pool)) (pstr (:pointer pj-str)) (cstr :string))
 (defcfun "pj_init" pj-status)
 (defcfun "pj_log_set_level" :void (log-level :int))
 (defcfun "pj_log_set_log_func" :void (func :pointer))
