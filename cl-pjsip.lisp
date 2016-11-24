@@ -1541,3 +1541,8 @@
       +pj-success+))
 
 
+(defun pj-cstr (pjstring string)
+  (with-foreign-slots ((ptr slen) pjstring pj-str)
+    (setf slen (length string))
+    (setf ptr (foreign-string-alloc string))
+    pjstring))
