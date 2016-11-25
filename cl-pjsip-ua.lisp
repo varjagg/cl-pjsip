@@ -51,7 +51,8 @@
   (format t "~A" data))
 
 (defun ua-log (string)
-  (pj-log "cl-pjsip-ua.lisp" 1 string))
+  (pj-log "cl-pjsip-ua.lisp" 1 string)
+  (finish-output))
 
 (defcallback on-rx-request pj-bool ((rdata (:pointer pjsip-rx-data)))
   (ua-log "Handling RX request")
@@ -75,26 +76,26 @@
       (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 	  (if (not (eql :pjsip-ack-method (foreign-enum-keyword 'pjsip-method-e id-val)))
 	      (progn 
-		(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (lisp-string-to-pj-str "Unable to handle request" pjs)
+		(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "Unable to handle request")
 					       (null-pointer) (null-pointer)))
 	      (return-from on-rx-request t)))
 
       (unless (null-pointer-p (deref *inv*))
-	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (lisp-string-to-pj-str "Another call in progress" pjs)
+	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "Another call in progress")
 				       (null-pointer) (null-pointer))
 	(return-from on-rx-request t))
 
       (unless (pj-success (pjsip-inv-verify-request (deref rdata) options (null-pointer) (null-pointer) *endpt* (null-pointer)))
-	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (lisp-string-to-pj-str "INVITE too complex for this humble agent" pjs)
+	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "INVITE too complex for this humble agent")
 				       (null-pointer) (null-pointer))
 	(return-from on-rx-request t))
 
       (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
 	(ua-log "Unable to retrieve local host IP")
 	(return-from on-rx-request t))
-      (lisp-string-to-pj-str 
-       (format nil "<sip:simpleuas@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+)
-       local-uri)
+      (pj-cstr 
+       local-uri
+       (format nil "<sip:simpleuas@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+))
 	   
       (unless (pj-success (pjsip-dlg-create-uas-and-inc-lock (pjsip-ua-instance) (deref rdata) local-uri dlg))
 	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (null-pointer)
@@ -141,15 +142,14 @@
   (load-pjsip-libraries)
   (foreign-funcall "bzero" :pointer *mod-simpleua* :int (foreign-type-size 'pjsip-module) :void)
   (with-foreign-slots ((name id priority on-rx-request) *mod-simpleua* pjsip-module)
-    #+nil(lisp-string-to-pj-str "mod-simpleua" (foreign-slot-pointer *mod-simpleua* 'pjsip-module 'name))
-    (pj-strcpy2 name "mod-simpleua")
+    (pj-cstr name "mod-simpleua")
     (setf priority (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-application)
 	  id -1
 	  on-rx-request (callback on-rx-request)))
 
   (foreign-funcall "bzero" :pointer *msg-logger* :int (foreign-type-size 'pjsip-module) :void)
-  #+nil(with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request on-tx-response) *msg-logger* pjsip-module)
-    (lisp-string-to-pj-str "mod-msg-log" name)
+  (with-foreign-slots ((name id priority on-rx-request on-rx-response on-tx-request on-tx-response) *msg-logger* pjsip-module)
+    (pj-cstr name "mod-msg-log")
     (setf priority (1- (foreign-enum-value 'pjsip-module-priority :pjsip-mod-priority-transport-layer))
 	  id -1
 	  on-rx-request (callback logging-on-rx-msg)
@@ -210,7 +210,7 @@
 	 (pjmedia-snd-port-connect (deref *snd-port*) (deref media-port)))))
 
 (defun run-agent (&optional uri) 
-  (unwind-protect			;to unwind and protect!
+  (unwind-protect ;to unwind and protect!
        (progn
 	 (assert-success (pj-init))
 	 (pj-log-set-level 5)
@@ -276,12 +276,11 @@
 	       (unless (pj-success (pj-gethostip *pj-af-inet* hostaddr))
 		 (ua-log "Unable to retrieve local host IP")
 		 (return-from run-agent nil))
-	       (lisp-string-to-pj-str uri local-uri)
+	       (pj-cstr local-uri uri)
 	       (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2)
-	       (lisp-string-to-pj-str 
-		(format nil "<sip:simpleuac@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+)
-		local-uri)
-	       (lisp-string-to-pj-str uri dst-uri)
+	       (pj-cstr local-uri
+		(format nil "<sip:simpleuac@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+))
+	       (pj-cstr dst-uri uri)
 	       (ua-log "Creating UAC dialog")
 	       (assert-success (pjsip-dlg-create-uac (pjsip-ua-instance) local-uri local-uri dst-uri dst-uri dlg))
 	       (ua-log "Creating SDP endpoint")
