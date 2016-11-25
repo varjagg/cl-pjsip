@@ -48,6 +48,12 @@
 
 (defctype pj-int32 :int)
 
+(defctype pj-uint32 :uint)
+
+(defctype pj-int16 :short)
+
+(defctype pj-uint16 :ushort)
+
 (defcstruct pj-str
   (ptr (:pointer :char))
   (slen :long))
