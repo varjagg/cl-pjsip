@@ -13,7 +13,7 @@
 
 (defctype pjmedia-clock-src (:struct pjmedia-clock-src))
 
-(defctype pjmedia-aud-dev-index :int32)
+(defctype pjmedia-aud-dev-index pj-int32)
 
 (defcenum pjmedia-aud-dev-route
   :pjmedia-aud-dev-route-default
@@ -49,13 +49,15 @@
 (defcstruct pjmedia-snd-port
   (rec-id :int)
   (play-id :int)
-  (aud-caps :uint32)
+  (aud-caps pj-uint32)
   (aud-param pjmedia-aud-param)
   (aud-stream :pointer) ;dangling
   (dir pjmedia-dir)
   (port (:pointer pjmedia-port))
+
   (cap-clocksrc pjmedia-clock-src)
   (play-clocksrc pjmedia-clock-src)
+
   (clock-rate :uint)
   (channel-count :uint)
   (samples-per-frame :uint)
@@ -69,6 +71,7 @@
   (ec-suspended pj-bool)
   (ec-suspended-count :uint)
   (ec-suspended-limit :uint)
+
   ;;callbackery
   (user-data (:pointer :void))
   (on-play-frame :pointer)
