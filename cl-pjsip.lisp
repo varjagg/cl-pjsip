@@ -46,6 +46,8 @@
 
 (defctype pj-bool :boolean)
 
+(defctype pj-int32 :int)
+
 (defcstruct pj-str
   (ptr (:pointer :char))
   (slen :long))
