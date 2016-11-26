@@ -54,6 +54,10 @@
 
 (defctype pj-uint16 :ushort)
 
+(defctype pj-uint64 :unsigned-long-long)
+
+(defctype pj-int64 :long-long)
+
 (defcstruct pj-str
   (ptr (:pointer :char))
   (slen :long))
@@ -227,7 +231,7 @@
 
 (defcunion pj-in6-addr
   (s6-addr :uint8 :count 16)
-  (u6-addr32 :uint32 :count 4))
+  (u6-addr32 pj-uint32 :count 4))
 
 ;;;on Darwin
 #+nil(defcstruct pj-sockaddr-in6
@@ -242,16 +246,16 @@
 
 ;;; Linux
 (defcstruct pj-sockaddr-in6
-  (sin6-family :uint16)
-  (sin6-port :uint16)
-  (sin6-flowinfo :uint32)
+  (sin6-family pj-uint16)
+  (sin6-port pj-uint16)
+  (sin6-flowinfo pj-uint32)
   (sin6-addr (:union pj-in6-addr))
-  (sin6-scope-id :uint32))
+  (sin6-scope-id pj-uint32))
 
 (defctype pj-sockaddr-in6 (:struct pj-sockaddr-in6))
 
 (defcstruct pj-in-addr
-  (s-addr :uint32))
+  (s-addr pj-uint32))
 
 (defctype pj-in-addr (:struct pj-in-addr))
 
@@ -261,14 +265,14 @@
   (sin-family :uint8)
   ;;assume zero len
   ;;(sin-family :uint16)
-  (sin-port :uint16)
+  (sin-port pj-uint16)
   (sin-addr (:struct pj-in-addr))
   (sin-zero :char :count 8))
 
 ;;; Linux
 (defcstruct pj-sockaddr-in
-  (sin-family :uint16)
-  (sin-port :uint16)
+  (sin-family pj-uint16)
+  (sin-port pj-uint16)
   (sin-addr (:struct pj-in-addr))
   (sin-zero :char :count 8))
 
@@ -280,7 +284,7 @@
   (sa-family :uint8))
 
 (defcstruct pj-addr-hdr
-  (sa-family :uint16))
+  (sa-family pj-uint16))
 
 (defctype pj-addr-hdr (:struct pj-addr-hdr))
 
@@ -327,8 +331,8 @@
 (defctype pj-timer-entry (:struct pj-timer-entry))
 
 (defcunion pj-timestamp
-  (w :uint64) ;lo + hi 32 bit components
-  (u64 :uint64))
+  (w pj-uint64) ;lo + hi 32 bit components
+  (u64 pj-uint64))
 
 (defctype pj-timestamp (:union pj-timestamp))
 
@@ -665,7 +669,7 @@
   (star :int)
   (uri (:pointer (:struct pjsip-uri)))
   (q1000 :int)
-  (expires :int32)
+  (expires pj-int32)
   (other-param (:struct pjsip-param)))
 
 (defctype pjsip-contact-hdr (:struct pjsip-contact-hdr))
@@ -762,7 +766,7 @@
   (is-proxy pj-bool)
   (qop-value pjsip-auth-qop-type)
   (stale-cnt :uint)
-  (nc :uint32) ;PJSIP_AUTH_QOP_SUPPORT = 1
+  (nc pj-uint32) ;PJSIP_AUTH_QOP_SUPPORT = 1
   (cnonce pj-str) ;PJSIP_AUTH_QOP_SUPPORT = 1
   (last-chal (:pointer (:struct pjsip-www-authenticate-hdr)))
   #+nil(cached-hdr (:struct pjsip-cached-auth-hdr)) ;no caching support, as it defaults to none in pjsip, but be careful
@@ -849,15 +853,15 @@
 
 (defcstruct sdp-session-origin
   (user pj-str)
-  (id :uint32)
-  (version :uint32)
+  (id pj-uint32)
+  (version pj-uint32)
   (net-type pj-str)
   (addr-type pj-str)
   (addr pj-str))
 
 (defcstruct sdp-session-time
-  (start :uint32)
-  (stop :uint32))
+  (start pj-uint32)
+  (stop pj-uint32))
 
 (defcstruct pjmedia-sdp-session
   (origin (:struct sdp-session-origin))
@@ -904,7 +908,7 @@
   (invite-req :pointer) ;dangling
   (last-answer :pointer) ;dangling
   (last-ack :pointer) ;dangling
-  (last-ack-cseq :int32)
+  (last-ack-cseq pj-int32)
   (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
   (timer :pointer) ;dangling
   (following-fork pj-bool)
@@ -937,7 +941,7 @@
 (defcstruct rx-data-pkt-info
   (timestamp (:struct pj-time-val))
   (packet :char :count 4000) ;PJSIP_MAX_PKT_LEN
-  (zero :uint32)
+  (zero pj-uint32)
   (len size)
   (src-addr (:union pj-sockaddr))
   (src-addr-len :int)
@@ -1007,7 +1011,7 @@
 
 (defcstruct pjsip-generic-int-hdr
   (hdr (:struct pjsip-hdr))
-  (ivalue :int32))
+  (ivalue pj-int32))
 
 (defctype pjsip-generic-int-hdr (:struct pjsip-generic-int-hdr))
 
@@ -1027,7 +1031,7 @@
 
 (defcstruct pjsip-cseq-hdr
   (hdr (:struct pjsip-hdr))
-  (cseq :int32)
+  (cseq pj-int32)
   (method (:struct pjsip-method)))
 
 (defcstruct pjsip-ctype-hdr
@@ -1131,9 +1135,9 @@
   (tx-maxptime :uint)
   (tx-event-pt :int)
   (rx-event-pt :int)
-  (ssrc :uint32)
-  (rtp-ts :uint32)
-  (rtp-seq :uint16)
+  (ssrc pj-uint32)
+  (rtp-ts pj-uint32)
+  (rtp-seq pj-uint16)
   (rtp-seq-ts-set :uint8)
   (jb-init :int)
   (jb-min-pre :int)
@@ -1176,8 +1180,8 @@
   (channel-count :uint)
   (frame-time-usec :uint)
   (bits-per-sample :uint)
-  (avg-bps :uint32)
-  (max-bps :uint32))
+  (avg-bps pj-uint32)
+  (max-bps pj-uint32))
 
 (defctype pjmedia-audio-format-detail (:struct pjmedia-audio-format-detail))
 
@@ -1196,8 +1200,8 @@
 (defcstruct pjmedia-video-format-detail
   (size (:struct pjmedia-rect-size))
   (fps (:struct pjmedia-ratio))
-  (avg-bps :uint32)
-  (max-bps :uint32))
+  (avg-bps pj-uint32)
+  (max-bps pj-uint32))
 
 (defctype pjmedia-video-format-detail (:struct pjmedia-video-format-detail))
 
@@ -1207,7 +1211,7 @@
   (user :char :count 1)) ;PJMEDIA_FORMAT_DETAIL_USER_SIZE
 
 (defcstruct pjmedia-format
-  (id :uint32)
+  (id pj-uint32)
   (type pjmedia-type)
   (detail-type pjmedia-format-detail-type)
   (det (:union format-det)))
@@ -1216,7 +1220,7 @@
 
 (defcstruct pjmedia-port-info
   (name pj-str)
-  (signature :uint32)
+  (signature pj-uint32)
   (dir pjmedia-dir)
   (fmt (:struct pjmedia-format)))
 
@@ -1389,6 +1393,8 @@
 (defcfun "pj_log_pop_indent" :void)
 
 (defcfun "pjlib_util_init" pj-status)
+
+(defcvar "pj_pool_factory_default_policy" pj-pool-factory-policy)
 
 (defcfun "pj_pool_factory_get_default_policy" (:pointer pj-pool-factory-policy))
 
