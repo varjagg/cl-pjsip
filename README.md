@@ -15,7 +15,7 @@ Licensed under the terms of GPL v2 in compliance with PJSIP code it links to.
 
 ## Dependencies
 
-Known to work on CCL 1.11 x64, with [PJSIP](http://www.pjsip.org/) 2.5.5.
+Known to work on CCL 1.11 Linux x64 and SBCL 1.3.5.9 Linux x64, with [PJSIP](http://www.pjsip.org/) 2.5.5.
 
 ## Building PJSIP
 
