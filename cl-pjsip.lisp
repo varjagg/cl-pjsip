@@ -39,7 +39,7 @@
 (defun pj-success (val)
   (= val +pj-success+))
 
-(defctype size :unsigned-int)
+(defctype size :unsigned-long)
 (defctype pj-status :int)
 
 (defctype pj-size size)
@@ -1381,7 +1381,7 @@
 
 (defctype pjsip-event (:struct pjsip-event))
 
-(defcvar "PJ_AF_INET" :uint16)
+(defcvar "PJ_AF_INET" pj-uint16)
 
 (defcfun "pj_str" (:pointer pj-str) (str :string))
 (defcfun "pj_strcpy2" (:pointer pj-str) (pstr (:pointer pj-str)) (cstr :string))
