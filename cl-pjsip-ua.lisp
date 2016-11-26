@@ -245,7 +245,8 @@
 
 	 (ua-log "Initialize media endpoint")
 	 (assert-success (pjmedia-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory)
-					       (pjsip-endpt-get-ioqueue (deref *endpt*)) 1 *med-endpt*))
+					       (null-pointer) #+nil(pjsip-endpt-get-ioqueue (deref *endpt*))
+					       1 *med-endpt*))
 
 	 (ua-log "initialize G711 codec")
 	 (assert-success (pjmedia-codec-g711-init (deref *med-endpt*)))
