@@ -1440,6 +1440,8 @@
 (defcfun "pjsip_endpt_respond_stateless" pj-status (endpt (:pointer pjsip-endpoint)) (rdata (:pointer pjsip-rx-data))
 	 (st-code :int) (st-text pj-str) (hdr-list (:pointer pjsip-hdr)) (body (:pointer pjsip-msg-body)))
 
+(defcfun "pjsip_endpt_get_ioqueue" :pointer (endpt (:pointer pjsip-endpoint)))
+
 (defcfun "pjmedia_codec_g711_init" pj-status (endpoint (:pointer pjmedia-endpt)))
 
 (defcfun "pjmedia_transport_udp_create3" pj-status (endpoint (:pointer pjmedia-endpt)) (af :int) (name :string) (addr (:pointer pj-str))
