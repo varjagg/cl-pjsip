@@ -217,7 +217,7 @@
 	 (pj-log-set-log-func (callback logger))
 	 (ua-log "Starting user agent..")
 	 (assert-success (pjlib-util-init))
-	 (pj-caching-pool-init *cp* (pj-pool-factory-get-default-policy) 0)
+	 (pj-caching-pool-init *cp* *pj-pool-factory-default-policy* 0)
 	 (let ((endpt-name (machine-instance)))
 	   (ua-log (format nil "Initialize SIP endpoint with name ~A" endpt-name))
 	   (assert-success (pjsip-endpt-create (foreign-slot-pointer *cp* 'pj-caching-pool 'factory) (null-pointer) *endpt*)))
