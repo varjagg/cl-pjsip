@@ -54,9 +54,9 @@
 
 (defctype pj-uint16 :ushort)
 
-(defctype pj-uint64 :unsigned-long-long)
+(defctype pj-uint64 :uint64)
 
-(defctype pj-int64 :long-long)
+(defctype pj-int64 :int64)
 
 (defcstruct pj-str
   (ptr (:pointer :char))
@@ -239,10 +239,10 @@
   (sin6-family :uint8)
   ;;assume zero len
   ;;(sin6-family :uint16)
-  (sin6-port :uint16)
-  (sin6-flowinfo :uint32)
+  (sin6-port pj-uint16)
+  (sin6-flowinfo pj-uint32)
   (sin6-addr (:union pj-in6-addr))
-  (sin6-scope-id :uint32))
+  (sin6-scope-id pj-uint32))
 
 ;;; Linux
 (defcstruct pj-sockaddr-in6
@@ -677,10 +677,10 @@
 (defcstruct pjsip-dlg-party
   (info (:pointer (:struct pjsip-fromto-hdr)))
   (info-str pj-str)
-  (tag-hval :uint32)
+  (tag-hval pj-uint32)
   (contact (:pointer (:struct pjsip-contact-hdr)))
-  (first-cseq :int32)
-  (cseq :int32))
+  (first-cseq pj-int32)
+  (cseq pj-int32))
 
 (defctype pjsip-dlg-party (:struct pjsip-dlg-party))
 
