@@ -234,7 +234,7 @@
   (u6-addr32 pj-uint32 :count 4))
 
 ;;;on Darwin
-#+nil(defcstruct pj-sockaddr-in6
+#+darwin(defcstruct pj-sockaddr-in6
   (sin6-zero-len :uint8)
   (sin6-family :uint8)
   ;;assume zero len
@@ -245,7 +245,7 @@
   (sin6-scope-id pj-uint32))
 
 ;;; Linux
-(defcstruct pj-sockaddr-in6
+#+linux(defcstruct pj-sockaddr-in6
   (sin6-family pj-uint16)
   (sin6-port pj-uint16)
   (sin6-flowinfo pj-uint32)
@@ -260,7 +260,7 @@
 (defctype pj-in-addr (:struct pj-in-addr))
 
 ;;;on Darwin
-#+nil(defcstruct pj-sockaddr-in
+#+darwin(defcstruct pj-sockaddr-in
   (sin-zero-len :uint8)
   (sin-family :uint8)
   ;;assume zero len
@@ -270,7 +270,7 @@
   (sin-zero :char :count 8))
 
 ;;; Linux
-(defcstruct pj-sockaddr-in
+#+linux(defcstruct pj-sockaddr-in
   (sin-family pj-uint16)
   (sin-port pj-uint16)
   (sin-addr (:struct pj-in-addr))
