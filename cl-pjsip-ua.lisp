@@ -327,5 +327,6 @@
     (unless (null-pointer-p (deref *endpt*))
       (pjsip-endpt-destroy (deref *endpt*)))
     (pj-log-pop-indent))
+  (setf *complete* nil)
   t)
 
