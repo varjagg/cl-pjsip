@@ -1438,7 +1438,7 @@
 (defcfun "pjsip_endpt_handle_events" pj-status (endpt (:pointer pjsip-endpoint)) (max-timeout (:pointer pj-time-val)))
 
 (defcfun "pjsip_endpt_respond_stateless" pj-status (endpt (:pointer pjsip-endpoint)) (rdata (:pointer pjsip-rx-data))
-	 (st-code :int) (st-text pj-str) (hdr-list (:pointer pjsip-hdr)) (body (:pointer pjsip-msg-body)))
+	 (st-code :int) (st-text (:pointer pj-str)) (hdr-list (:pointer pjsip-hdr)) (body (:pointer pjsip-msg-body)))
 
 (defcfun "pjsip_endpt_get_ioqueue" :pointer (endpt (:pointer pjsip-endpoint)))
 
