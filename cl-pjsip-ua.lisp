@@ -60,10 +60,11 @@
 			 (local-uri 'pj-str)
 			 (dlg '(:pointer pjsip-dialog))
 			 (pjs 'pj-str)
-			 (options :int)
+			 (options :uint)
 			 (hostip :char +ivp6_addr_size+)
 			 (local-sdp '(:pointer pjmedia-sdp-session))
-			 (tdata '(:pointer pjsip-tx-data)))
+			 (tdata '(:pointer (:pointer pjsip-tx-data))))
+    (setf options 0)
     (let* ((id-val (foreign-slot-value
 		   (foreign-slot-pointer
 		    (foreign-slot-pointer
@@ -73,20 +74,19 @@
 		     '(:union msg-line) 'req)
 		    'pjsip-request-line 'method)
 		   'pjsip-method 'id)))
-      (if (not (eql :pjsip-invite-method id-val))
-	  (if (not (eql :pjsip-ack-method id-val))
-	      (progn 
-		(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "Unable to handle request")
-					       (null-pointer) (null-pointer)))
-	      (return-from on-rx-request t)))
-
+      (when (not (eql :pjsip-invite-method id-val))
+	(when (not (eql :pjsip-ack-method id-val))
+	  (pjsip-endpt-respond-stateless (deref *endpt*) rdata 500 (pj-cstr pjs "Unable to handle request")
+					 (null-pointer) (null-pointer)))
+	(return-from on-rx-request t))
+      
       (unless (null-pointer-p (deref *inv*))
-	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "Another call in progress")
+	(pjsip-endpt-respond-stateless (deref *endpt*) rdata 500 (pj-cstr pjs "Another call in progress")
 				       (null-pointer) (null-pointer))
 	(return-from on-rx-request t))
 
-      (unless (pj-success (pjsip-inv-verify-request (deref rdata) options (null-pointer) (null-pointer) *endpt* (null-pointer)))
-	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "INVITE too complex for this humble agent")
+      (unless (pj-success (pjsip-inv-verify-request rdata options (null-pointer) (null-pointer) *endpt* (null-pointer)))
+	(pjsip-endpt-respond-stateless (deref *endpt*) rdata 500 (pj-cstr pjs "INVITE too complex for this humble agent")
 				       (null-pointer) (null-pointer))
 	(return-from on-rx-request t))
 
@@ -97,33 +97,33 @@
        local-uri
        (format nil "<sip:simpleuas@~A:~D>" (pj-sockaddr-print hostaddr hostip +ivp6_addr_size+ 2) +sip-port+))
 	   
-      (unless (pj-success (pjsip-dlg-create-uas-and-inc-lock (pjsip-ua-instance) (deref rdata) local-uri dlg))
+      (unless (pj-success (pjsip-dlg-create-uas-and-inc-lock (pjsip-ua-instance) rdata local-uri dlg))
 	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (null-pointer)
 				       (null-pointer) (null-pointer))
 	(return-from on-rx-request t))
 	   
       (unless (pj-success (pjmedia-endpt-create-sdp (deref *med-endpt*) 
-						    (foreign-slot-pointer (foreign-slot-value (deref rdata) 'pjsip-rx-data 'tp-info)
+						    (foreign-slot-pointer (foreign-slot-value rdata 'pjsip-rx-data 'tp-info)
 									  'rx-data-tp-info 'pool)
 						    +max-media-cnt+ (deref *sock-info*) local-sdp))
 	(pjsip-dlg-dec-lock dlg)
 	(return-from on-rx-request t))
 	   
-      (unless (pj-success (pjsip-inv-create-uas dlg (deref rdata) (deref local-sdp) 0 *inv*))
+      (unless (pj-success (pjsip-inv-create-uas dlg rdata (deref local-sdp) 0 *inv*))
 	(pjsip-dlg-dec-lock dlg)
 	(return-from on-rx-request t))
 	   
       (pjsip-dlg-dec-lock dlg)
 
       ;; initial 180 response
-      (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) (deref rdata) 180 (null-pointer) (null-pointer) tdata))
+      (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) rdata 180 (null-pointer) (null-pointer) tdata))
 	(return-from on-rx-request t))
 
       (unless (pj-success (pjsip-inv-send-msg (deref *inv*) (deref tdata)))
 	(return-from on-rx-request t))
 
       ;; 200 response
-      (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) (deref rdata) 200 (null-pointer) (null-pointer) tdata))
+      (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) rdata 200 (null-pointer) (null-pointer) tdata))
 	(return-from on-rx-request t))
 
       (unless (pj-success (pjsip-inv-send-msg (deref *inv*) (deref tdata)))
@@ -132,11 +132,11 @@
 
 (defcallback logging-on-rx-msg pj-bool ((rdata (:pointer pjsip-rx-data)))
   (ua-log (format nil "RX ~A:~% ~A~% --end-of-message--" (foreign-string-to-lisp (pjsip-rx-data-get-info rdata))
-		  (getf (pjsip-rx-data-msg-info (deref rdata)) 'msg-buf))))
+		  (getf (pjsip-rx-data-msg-info rdata) 'msg-buf))))
 
 (defcallback logging-on-tx-msg pj-bool ((tdata (:pointer pjsip-tx-data)))
   (ua-log (format nil "TX ~A:~% ~A~% --end-of-message--" (foreign-string-to-lisp (pjsip-tx-data-get-info tdata))
-		  (foreign-string-to-lisp (pjsip-tx-data-msg (deref tdata))))))
+		  (foreign-string-to-lisp (pjsip-tx-data-msg tdata)))))
 
 (defun init ()
   (load-pjsip-libraries)
