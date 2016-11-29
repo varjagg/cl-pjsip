@@ -60,11 +60,11 @@
 			 (local-uri 'pj-str)
 			 (dlg '(:pointer pjsip-dialog))
 			 (pjs 'pj-str)
-			 (options :uint)
+			 (options :uint 1)
 			 (hostip :char +ivp6_addr_size+)
-			 (local-sdp '(:pointer pjmedia-sdp-session))
+			 (local-sdp '(:pointer (:pointer pjmedia-sdp-session)))
 			 (tdata '(:pointer (:pointer pjsip-tx-data))))
-    (setf options 0)
+    (setf (mem-ref options :uint) 0)
     (let* ((id-val (foreign-slot-value
 		   (foreign-slot-pointer
 		    (foreign-slot-pointer
@@ -103,7 +103,7 @@
 	(return-from on-rx-request t))
 	   
       (unless (pj-success (pjmedia-endpt-create-sdp (deref *med-endpt*) 
-						    (foreign-slot-pointer (foreign-slot-value rdata 'pjsip-rx-data 'tp-info)
+						    (foreign-slot-value (foreign-slot-pointer rdata 'pjsip-rx-data 'tp-info)
 									  'rx-data-tp-info 'pool)
 						    +max-media-cnt+ (deref *sock-info*) local-sdp))
 	(pjsip-dlg-dec-lock dlg)
