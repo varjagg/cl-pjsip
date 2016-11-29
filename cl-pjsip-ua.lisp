@@ -58,7 +58,7 @@
   (ua-log "Handling RX request")
   (with-foreign-objects ((hostaddr 'pj-sockaddr)
 			 (local-uri 'pj-str)
-			 (dlg '(:pointer pjsip-dialog))
+			 (dlg '(:pointer (:pointer pjsip-dialog)))
 			 (pjs 'pj-str)
 			 (options :uint 1)
 			 (hostip :char +ivp6_addr_size+)
@@ -101,19 +101,19 @@
 	(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (null-pointer)
 				       (null-pointer) (null-pointer))
 	(return-from on-rx-request t))
-	   
+
       (unless (pj-success (pjmedia-endpt-create-sdp (deref *med-endpt*) 
 						    (foreign-slot-value (foreign-slot-pointer rdata 'pjsip-rx-data 'tp-info)
 									  'rx-data-tp-info 'pool)
-						    +max-media-cnt+ (deref *sock-info*) local-sdp))
-	(pjsip-dlg-dec-lock dlg)
+						    +max-media-cnt+ *sock-info* local-sdp))
+	(pjsip-dlg-dec-lock (deref dlg))
 	(return-from on-rx-request t))
 	   
-      (unless (pj-success (pjsip-inv-create-uas dlg rdata (deref local-sdp) 0 *inv*))
-	(pjsip-dlg-dec-lock dlg)
+      (unless (pj-success (pjsip-inv-create-uas (deref dlg) rdata (deref local-sdp) 0 *inv*))
+	(pjsip-dlg-dec-lock (deref dlg))
 	(return-from on-rx-request t))
 	   
-      (pjsip-dlg-dec-lock dlg)
+      (pjsip-dlg-dec-lock (deref dlg))
 
       ;; initial 180 response
       (unless (pj-success (pjsip-inv-initial-answer (deref *inv*) rdata 180 (null-pointer) (null-pointer) tdata))
