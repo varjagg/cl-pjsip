@@ -132,11 +132,17 @@
 
 (defcallback logging-on-rx-msg pj-bool ((rdata (:pointer pjsip-rx-data)))
   (ua-log (format nil "RX ~A:~% ~A~% --end-of-message--" (foreign-string-to-lisp (pjsip-rx-data-get-info rdata))
-		  (getf (pjsip-rx-data-msg-info rdata) 'msg-buf))))
+		  (foreign-string-to-lisp (getf (pjsip-rx-data-msg-info rdata) 'msg-buf)))))
 
 (defcallback logging-on-tx-msg pj-bool ((tdata (:pointer pjsip-tx-data)))
-  (ua-log (format nil "TX ~A:~% ~A~% --end-of-message--" (foreign-string-to-lisp (pjsip-tx-data-get-info tdata))
-		  (foreign-string-to-lisp (pjsip-tx-data-msg tdata)))))
+  (let ((body (foreign-slot-value (pjsip-tx-data-msg tdata) 'pjsip-msg 'body)))
+    (unless (null-pointer-p body)
+      (let ((size (foreign-slot-value body 'pjsip-msg-body 'len)))
+	(with-foreign-string (msg (make-string (1+ size)))
+	  (foreign-funcall-pointer (foreign-slot-value body 'pjsip-msg-body 'print-body) ()
+				   :pointer body :pointer msg size size :int)
+	  (ua-log (format nil "TX ~A:~% ~A~% --end-of-message--" (foreign-string-to-lisp (pjsip-tx-data-get-info tdata))
+			  (foreign-string-to-lisp msg))))))))
 
 (defun init ()
   (load-pjsip-libraries)
