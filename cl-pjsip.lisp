@@ -1482,7 +1482,7 @@
 
 (defcfun "pjsip_inv_state_name" :string (state pjsip-inv-state))
 
-(defcfun "pjsip_inv_verify_request" pj-status (rdata (:pointer pjsip-rx-data)) (options :uint)
+(defcfun "pjsip_inv_verify_request" pj-status (rdata (:pointer pjsip-rx-data)) (options (:pointer :uint))
 	 (l-sdp (:pointer pjmedia-sdp-session)) (dlg (:pointer pjsip-dialog))
 	 (endpt (:pointer pjsip-endpoint)) (p-tdata (:pointer (:pointer pjsip-tx-data))))
 
