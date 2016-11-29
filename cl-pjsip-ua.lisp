@@ -65,16 +65,16 @@
 			 (local-sdp '(:pointer pjmedia-sdp-session))
 			 (tdata '(:pointer pjsip-tx-data)))
     (let* ((id-val (foreign-slot-value
-		   (foreign-slot-value
-		    (foreign-slot-value
-		     (foreign-slot-value 
-		      (deref (foreign-slot-pointer (deref (foreign-slot-pointer rdata 'pjsip-rx-data 'msg-info)) 'rx-data-msg-info 'msg))
+		   (foreign-slot-pointer
+		    (foreign-slot-pointer
+		     (foreign-slot-pointer 
+		      (foreign-slot-value (foreign-slot-pointer rdata 'pjsip-rx-data 'msg-info) 'rx-data-msg-info 'msg)
 		      'pjsip-msg 'line)
 		     '(:union msg-line) 'req)
 		    'pjsip-request-line 'method)
 		   'pjsip-method 'id)))
-      (if (not (eql :pjsip-invite-method (foreign-enum-keyword 'pjsip-method-e id-val)))
-	  (if (not (eql :pjsip-ack-method (foreign-enum-keyword 'pjsip-method-e id-val)))
+      (if (not (eql :pjsip-invite-method id-val))
+	  (if (not (eql :pjsip-ack-method id-val))
 	      (progn 
 		(pjsip-endpt-respond-stateless (deref *endpt*) (deref rdata) 500 (pj-cstr pjs "Unable to handle request")
 					       (null-pointer) (null-pointer)))
