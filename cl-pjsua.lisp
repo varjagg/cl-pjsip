@@ -200,6 +200,12 @@
 
 (defctype pjsua-ice-config (:struct pjsua-ice-config))
 
+(defcstruct pjsua-turn-config
+  (enable-turn pj-bool)
+  (turn-server pj-str)
+  (turn-conn-type pj-turn-tp-type)
+  (turn-auth-cred pj-stun-auth-cred))
+
 (defcstruct pjsua-acc-config
   (user-data (:pointer :void))
   (priority :int)
