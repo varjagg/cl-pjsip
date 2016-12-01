@@ -1197,6 +1197,16 @@
 
 (defctype pjmedia-ratio (:struct pjmedia-ratio))
 
+(defcenum pjmedia-vid-stream-rc-method
+  (pjmedia-vid-stream-rc-none 0)
+  (pjmedia-vid-stream-rc-simple-blocking 1))
+
+(defcstruct pjmedia-vid-stream-rc-config
+  (method pjmedia-vid-stream-rc-method)
+  (bandwidth :uint))
+
+(defctype pjmedia-vid-stream-rc-config (:struct pjmedia-vid-stream-rc-config))
+
 (defcstruct pjmedia-video-format-detail
   (size (:struct pjmedia-rect-size))
   (fps (:struct pjmedia-ratio))
