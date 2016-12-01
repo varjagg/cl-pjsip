@@ -155,3 +155,12 @@
 
 (defctype pjsua-logging-config (:struct pjsua-logging-config))
 
+(defcstruct pjsua-transport-config
+  (port :uint)
+  (port-range :uint)
+  (public-addr pj-str)
+  (bound-add pj-str)
+  (tls-setting (:struct pjsip-tls-setting))
+  (qos-type pj-qos-type)
+  (qos-params pj-qos-params)
+  (sockopt-params pj-sockopt-params))
