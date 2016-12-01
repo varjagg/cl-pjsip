@@ -1413,6 +1413,18 @@
 
 (defctype pj-qos-params (:struct pj-qos-params))
 
+(defcstruct sockopt-params-options
+  (level :int)
+  (optname :int)
+  (optval (:pointer :void))
+  (optlen :int))
+
+(defcstruct pj-sockopt-params
+  (cnt :uint)
+  (options (:struct sockopt-params-options) :count 4)) ;PJ_MAX_SOCKOPT_PARAMS
+
+(defctype pj-sockopt-params (:struct pj-sockopt-params))
+
 (defcstruct pjsip-tls-setting
   (ca-list-file pj-str)
   (ca-list-path pj-str)
@@ -1433,6 +1445,8 @@
   (qos-ignore-error pj-bool)
   (sockopt-params pj-sockopt-params)
   (sockopt-ignore-error pj-bool))
+
+(defctype pjsip-tls-setting (:struct pjsip-tls-setting))
 
 (defcvar "PJ_AF_INET" pj-uint16)
 
