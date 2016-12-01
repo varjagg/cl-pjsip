@@ -143,3 +143,15 @@
   (buf_ (:struct call-info-buf)))
 
 (defctype pjsua-call-info (:struct pjsua-call-info))
+
+(defcstruct pjsua-logging-config
+  (msg-logging pj-bool)
+  (level :uint)
+  (console-level :uint)
+  (decor :uint)
+  (log-filename pj-str)
+  (log-file-flags :uint)
+  (cb :pointer))
+
+(defctype pjsua-logging-config (:struct pjsua-logging-config))
+
