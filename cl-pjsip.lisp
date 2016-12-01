@@ -1392,6 +1392,48 @@
   (:pjsip-tlsv1-2-method 33)
   (:pjsip-sslv23-method 23))
 
+(defcenum pj-qos-type
+  :pj-qos-type-best-effort
+  :pj-qos-type-background
+  :pj-qos-type-video
+  :pj-qos-type-voice
+  :pj-qos-type-control)
+
+(defcenum pj-qos-wmm-prio
+  :pj-qos-wmm-prio-bulk-effort
+  :pj-qos-wmm-prio-bulk
+  :pj-qos-wmm-prio-video
+  :pj-qos-wmm-prio-voice)
+
+(defcstruct pj-qos-params
+  (flags :uint8)
+  (dscp-val :uint8)
+  (so-prio :uint8)
+  (wmm-proio pj-qos-wmm-prio))
+
+(defctype pj-qos-params (:struct pj-qos-params))
+
+(defcstruct pjsip-tls-setting
+  (ca-list-file pj-str)
+  (ca-list-path pj-str)
+  (cert-file pj-str)
+  (privkey-file pj-str)
+  (password pj-str)
+  (method pjsip-ssl-method)
+  (proto pj-uint32)
+  (ciphers-num :uint)
+  (ciphers :pointer) ;dangling
+  (verify-server pj-bool)
+  (verify-clien pj-bool)
+  (require-client-cert pj-bool)
+  (timeout pj-time-val)
+  (reuse-addr pj-bool)
+  (qos-type pj-qos-type)
+  (params pj-qos-params)
+  (qos-ignore-error pj-bool)
+  (sockopt-params pj-sockopt-params)
+  (sockopt-ignore-error pj-bool))
+
 (defcvar "PJ_AF_INET" pj-uint16)
 
 (defcfun "pj_str" (:pointer pj-str) (str :string))
