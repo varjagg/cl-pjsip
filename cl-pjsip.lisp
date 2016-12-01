@@ -1466,6 +1466,37 @@
   (:pj-turn-tp-tcp 6)
   (:pj-turn-tp-tls 255))
 
+(defcenum pj-stun-auth-cred-type
+  :pj-stun-auth-cred-static
+  :pj-stun-auth-cred-dynamic)
+
+(defcenum pj-stun-passwd-type
+  :pj-stun-passwd-plain
+  (:pj-stun-passwd-hashed 1))
+
+(defcstruct stun-auth-cred-data-static-cred
+  (realm pj-str)
+  (username pj-str)
+  (data-type pj-stun-passwd-type)
+  (data pj-str)
+  (nonce pj-str))
+
+(defcstruct stun-auth-cred-data-dyn-cred
+  (user-data (:pointer :void))
+  (get-auth :pointer)
+  (get-cred :pointer)
+  (get-password :pointer)
+  (verify-nonce :pointer))
+
+(defcunion stun-auth-cred-data
+  (static-cred (:struct stun-auth-cred-data-static-cred))
+  (dyn-cred (:struct stun-auth-cred-data-dyn-cred)))
+
+(defcstruct pj-stun-auth-cred
+  (type pj-stun-auth-cred-type)
+  (data (:union stun-auth-cred-data)))
+
+(defctype pj-stun-auth-cred (:struct pj-stun-auth-cred))
 
 (defcvar "PJ_AF_INET" pj-uint16)
 
