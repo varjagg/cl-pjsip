@@ -164,3 +164,7 @@
   (qos-type pj-qos-type)
   (qos-params pj-qos-params)
   (sockopt-params pj-sockopt-params))
+
+(defctype pjsua-transport-config (:struct pjsua-transport-config))
+
+
