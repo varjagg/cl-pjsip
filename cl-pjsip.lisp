@@ -1448,6 +1448,9 @@
 
 (defctype pjsip-tls-setting (:struct pjsip-tls-setting))
 
+(defcstruct pjsip-publishc-opt
+  (queue-request pj-bool))
+
 (defcvar "PJ_AF_INET" pj-uint16)
 
 (defcfun "pj_str" (:pointer pj-str) (str :string))
