@@ -167,4 +167,83 @@
 
 (defctype pjsua-transport-config (:struct pjsua-transport-config))
 
+(defctype pjsua-transport-id :int)
 
+(defcenum pjsua-stun-use
+  :pjsua-stun-use-default
+  :pjsua-stun-use-disabled
+  :pjsua-stun-use-retry-on-failure)
+
+(defcenum pjsua-ipv6-use
+  :pjsua-ipv6-disabled
+  :pjsua-ipv6-enabled)
+
+(defcenum pjsua-ice-config-use
+  :pjsua-ice-config-use-default
+  :pjsua-ice-config-use-custom)
+
+(defcenum pjsua-turn-config-use
+  :pjsua-trun-config-use-default
+  :pjsua-trun-config-use-custom)
+
+(defcstruct pj-ice-sess-options
+  (aggressive pj-bool)
+  (nominated-check-delay :uint)
+  (controlled-agent-want-nom-timeout :int))
+
+(defcstruct pjsua-ice-config
+  (enable-ice pj-bool)
+  (ice-max-host-cands :int)
+  (ice-opt (:struct pj-ice-sess-options))
+  (ice-no-rtcp pj-bool)
+  (ice-always-update pj-bool))
+
+(defctype pjsua-ice-config (:struct pjsua-ice-config))
+
+(defcstruct pjsua-acc-config
+  (user-data (:pointer :void))
+  (priority :int)
+  (id pj-str)
+  (reg-uri pj-str)
+  (reg-hdr-list pjsip-hdr)
+  (sub-hdr-list pjsip-hdr)
+  (mwi-enabled pj-bool)
+  (mwi-expires :uint)
+  (publish-enabled pj-bool)
+  (publish-opt (:struct pjsip-publishc-opt))
+  (unpublsih-max-wait-time-msec :uint)
+  (auth-pref pjsip-auth-clt-pref)
+  (pidf-tuple-id pj-str)
+  (force-contact pj-str)
+  (contact-params pj-str)
+  (contact-uri-params pj-str)
+  (require-100rel pjsua-100rel-use)
+  (use-timer pjsua-sip-timer-use)
+  (timer-setting pjsip-timer-setting)
+  (proxy-cnt :uint)
+  (proxy pj-str :count 8) ;PJSUA_ACC_MAX_PROXIES
+  (lock-codec :uint)
+  (reg-timeout :uint)
+  (reg-delay-before-refresh :uint)
+  (unreg-timeout :uint)
+  (cred-count :uint)
+  (cred-info pjsip-cred-info :count 8) ;PJSUA_ACC_MAX_PROXIES
+  (transport-id pjsua-transport-id)
+  (allow-contact-rewrite pj-bool)
+  (contact-rewrite-method :int)
+  (contact-use-src-port pj-bool)
+  (allow-via-rewrite pj-bool)
+  (allow-sdp-nat-rewrite pj-bool)
+  (use-rfc5626 :uint)
+  (rfc5626-instance-id pj-str)
+  (rfc5626-reg-id pj-str)
+  (ka-interval :uint)
+  (ka-data pj-str)
+  (vid-in-auto-show pj-bool)
+  (vid-out-auto-transmit pj-bool)
+  (vid-wnd-flags :uint)
+  (vid-cap-dev pjmedia-vid-dev-index)
+  (vid-rend-dev pjmedia-vid-dev-index)
+  (vid-stream-rc-config pjmedia-vid-stream-rc-config)
+  (rtp-cfg pjsua-transport-config)
+  (ipv6-media-use pjsua-ipv6-use))
