@@ -32,6 +32,11 @@
   (data pj-str)
   (ext-aka (:struct cred-info-aka)))
 
+(defcenum pjmedia-srtp-use
+  :pjmedia-srtp-disabled
+  :pjmedia-srtp-optional
+  :pjmedia-srtp-mandatory)
+
 (defcstruct pjsua-config
   (max-calls :uint)
   (thread-cnt :uint)
@@ -53,4 +58,9 @@
   (cred-count :uint)
   (cred-info (:struct pjsip-cred-info) :count 8) ;PJSUA_ACC_MAX_PROXIES
   (cb :pointer)
-  (user-agent pj-str))
+  (user-agent pj-str)
+  (use-srtp pjmedia-strp-use)
+  (srtp-secure-signaling :int)
+  (srtp-optional-dup-offer pj-bool)
+  (hangup-forked-call pj-bool))
+
