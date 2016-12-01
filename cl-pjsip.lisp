@@ -1203,6 +1203,8 @@
   (avg-bps pj-uint32)
   (max-bps pj-uint32))
 
+(defctype pjmedia-vid-dev-index pj-int32)
+
 (defctype pjmedia-video-format-detail (:struct pjmedia-video-format-detail))
 
 (defcunion format-det
