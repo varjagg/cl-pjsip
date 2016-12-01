@@ -1461,6 +1461,12 @@
 (defcstruct pjsip-publishc-opt
   (queue-request pj-bool))
 
+(defcenum pj-turn-tp-type
+  (:pj-turn-tp-udp 17)
+  (:pj-turn-tp-tcp 6)
+  (:pj-turn-tp-tls 255))
+
+
 (defcvar "PJ_AF_INET" pj-uint16)
 
 (defcfun "pj_str" (:pointer pj-str) (str :string))
