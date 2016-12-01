@@ -1383,6 +1383,15 @@
 
 (defctype pjsip-event (:struct pjsip-event))
 
+(defcenum pjsip-ssl-method
+  (:pjsip-ssl-unspecified-method 0)
+  (:pjsip-sslv2-method 20)
+  (:pjsip-sslv3-method 30)
+  (:pjsip-tlsv1-method 31)
+  (:pjsip-tlsv1-1-method 32)
+  (:pjsip-tlsv1-2-method 33)
+  (:pjsip-sslv23-method 23))
+
 (defcvar "PJ_AF_INET" pj-uint16)
 
 (defcfun "pj_str" (:pointer pj-str) (str :string))
