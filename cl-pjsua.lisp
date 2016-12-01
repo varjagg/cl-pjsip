@@ -64,3 +64,82 @@
   (srtp-optional-dup-offer pj-bool)
   (hangup-forked-call pj-bool))
 
+(defctype pjsua-config (:struct pjsua-config))
+
+(defctype pjsua-call-id :int)
+(defctype pjsua-acc-id :int)
+(defctype pjsua-buddy-id :int)
+(defctype pjsua-player-id :int)
+(defctype pjsua-recorder-id :int)
+(defctype pjsua-conf-port-id :int)
+
+(defcstruct pjsua-call-setting
+  (flag :uint)
+  (req-keyframe-method :uint)
+  (aud-cnt :uint)
+  (vid-cnt :uint))
+
+(defcenum pjsua-call-media-status
+  :pjsua-call-media-none
+  :pjsua-call-media-active
+  :pjsua-call-media-local-hold
+  :pjsua-call-media-remote-hole
+  :pjsua-call-media-error)
+
+(defcstruct call-media-info-stream-aud
+  (conf-slot pjsua-conf-port-id))
+
+(defctype pjsua-vid-win-id :int)
+
+(defcstruct call-media-info-stream-vid
+  (win-in pjsua-vid-win-id)
+  (cap-dev pjmedia-vid-dev-index))
+
+(defcunion call-media-info-stream
+  (aud (:struct call-media-info-stream-aud))
+  (vid (:struct call-media-info-stream-vid)))
+
+(defcstruct pjsua-call-media-info
+  (index :uint)
+  (type pjmedia-type)
+  (dir pjmedia-dir)
+  (status pjsua-call-media-status)
+  (stream (:union call-media-info-stream)))
+
+(defcstruct call-info-buf
+  (local-info :char :count 128)
+  (local-contact :char :count 128)
+  (remote-info :char :count 128)
+  (remote-contact :char :count 128)
+  (call-id :char :count 128)
+  (last-status-text :char :count 128))
+
+(defcstruct pjsua-call-info
+  (id pjsua-call-id)
+  (role pjsip-role-e)
+  (acc-id pjsua-acc-id)
+  (local-info pj-str)
+  (local-contact pj-str)
+  (remote-info pj-str)
+  (remote-contact pj-str)
+  (call-id pj-str)
+  (setting (:struct pjsua-call-setting))
+  (state pjsip-inv-state)
+  (state-text pj-str)
+  (last-status pjsip-status-code)
+  (last-status-text pj-str)
+  (media-status pjsua-call-media-status)
+  (media-dir pjmedia-dir)
+  (conf-slot pjsua-conf-port-id)
+  (media-cnt :uint)
+  (media pjsua-call-media-info :count 16) ;PJMEDIA_MAX_SDP_MEDIA
+  (prov-media-cnt :uint)
+  (prov-media pjsua-call-media-info :count 16) ;PJMEDIA_MAX_SDP_MEDIA
+  (connect-duration pj-time-val)
+  (total-duration pj-time-val)
+  (rem-offerer pj-bool)
+  (rem-aud-cnt :uint)
+  (rem-vid-cnt :uint)
+  (buf_ (:struct call-info-buf)))
+
+(defctype pjsua-call-info (:struct pjsua-call-info))
