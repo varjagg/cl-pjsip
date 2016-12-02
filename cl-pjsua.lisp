@@ -206,6 +206,12 @@
   (turn-conn-type pj-turn-tp-type)
   (turn-auth-cred pj-stun-auth-cred))
 
+(defctype pjsua-turn-config (:struct pjsua-turn-config))
+
+(defcenum pjsua-call-hold-type
+  :pjsua-call-hold-type-rfc3264
+  :pjsua-call-hold-type-rfc2543)
+
 (defcstruct pjsua-acc-config
   (user-data (:pointer :void))
   (priority :int)
@@ -225,7 +231,7 @@
   (contact-uri-params pj-str)
   (require-100rel pjsua-100rel-use)
   (use-timer pjsua-sip-timer-use)
-  (timer-setting pjsip-timer-setting)
+  (timer-setting (:struct pjsip-timer-setting))
   (proxy-cnt :uint)
   (proxy pj-str :count 8) ;PJSUA_ACC_MAX_PROXIES
   (lock-codec :uint)
@@ -233,7 +239,7 @@
   (reg-delay-before-refresh :uint)
   (unreg-timeout :uint)
   (cred-count :uint)
-  (cred-info pjsip-cred-info :count 8) ;PJSUA_ACC_MAX_PROXIES
+  (cred-info (:struct pjsip-cred-info) :count 8) ;PJSUA_ACC_MAX_PROXIES
   (transport-id pjsua-transport-id)
   (allow-contact-rewrite pj-bool)
   (contact-rewrite-method :int)
@@ -251,5 +257,22 @@
   (vid-cap-dev pjmedia-vid-dev-index)
   (vid-rend-dev pjmedia-vid-dev-index)
   (vid-stream-rc-config pjmedia-vid-stream-rc-config)
-  (rtp-cfg pjsua-transport-config)
-  (ipv6-media-use pjsua-ipv6-use))
+  (rtp-cfg (:struct pjsua-transport-config))
+  (ipv6-media-use pjsua-ipv6-use)
+  (sip-stun-use pjsua-stun-use)
+  (media-stun-use pjsua-stun-use)
+  (ice-cfg-use pjsua-ice-config-use)
+  (ice-cfg pjsua-ice-config)
+  (turn-cfg-use pjsua-turn-config-use)
+  (turn-cfg pjsua-turn-config)
+  (use-rtp pjmedia-srtp-use)
+  (srtp-secure-signaling :int)
+  (srtp-optional-dup-offer pj-bool)
+  (reg-retry-interval :uint)
+  (reg-first-retry-interval :uint)
+  (reg-retry-random-interval :uint)
+  (drop-calls-on-reg-fail pj-bool)
+  (reg-use-proxy :uint)
+  (use-stream-ka pj-bool)
+  (call-hold-type pjsua-call-hold-type)
+  (register-on-acc-add pj-bool))
