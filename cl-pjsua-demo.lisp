@@ -23,6 +23,11 @@
   (declare (ignorable e))
   (with-foreign-object (ci 'pjsua-call-info)
     (pjsua-call-get-info call-id ci)
+    (ua-log (format nil "Call ~D state=~A" call-id (pj-str-to-lisp (foreign-slot-pointer ci 'pjsua-call-info 'state))))))
+
+(defcallback on-call-media-state :void ((call-id pjsua-call-id))
+  (with-foreign-object (ci 'pjsua-call-info)
+    (pjsua-call-get-info call-id ci)
     (when (eql (foreign-slot-value ci 'pjsua-call-info 'media-status) :pjsua-call-media-active)
       ;; plug the audio in
       (pjsua-conf-connect (foreign-slot-value ci 'pjsua-call-info 'conf-slot) 0)
