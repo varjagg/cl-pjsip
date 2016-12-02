@@ -1679,3 +1679,7 @@
     (setf slen (length string))
     (setf ptr (foreign-string-alloc string))
     pjstring))
+
+(defcallback logger :void ((level :int) (data :string) (len :int))
+  (declare (ignorable len level))
+  (format t "~A" data))
