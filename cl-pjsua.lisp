@@ -294,7 +294,63 @@
 
 (defctype pjsua-msg-data (:struct pjsua-msg-data))
 
+(defcstruct pjsua-media-config
+  (clock-rate :uint)
+  (snd-clock-rate :uint)
+  (channel-count :uint)
+  (audio-frame-ptime :uint)
+  (max-media-ports :uint)
+  (has-ioqueue pj-bool)
+  (thread-cnt :uint)
+  (quality :uint)
+  (ptime :uint)
+  (no-vad pj-bool)
+  (ilbc-mode :uint)
+  (tx-drop-pct :uint)
+  (rx-drop-pct :uint)
+  (ec-options :uint)
+  (ec-tail-en :uint)
+  (snd-rec-latency :uint)
+  (snd-play-latency :uint)
+  (jb-init :int)
+  (jb-min-pre :int)
+  (jb-max-pre :int)
+  (jb-max :int)
+  (enable-ice pj-bool)
+  (ice-max-host-cands :int)
+  (ice-opt (:struct pj-ice-sess-options))
+  (ice-no-rtcp pj-bool)
+  (ice-always-update pj-bool)
+  (enable-turn pj-bool)
+  (turn-server pj-str)
+  (turn-conn-type pj-turn-tp-type)
+  (turn-auth-cred pj-stun-auth-cred)
+  (snd-auto-close-time :int)
+  (vid-preview-enable-native pj-bool)
+  (no-smart-media-update pj-bool)
+  (no-rtcp-sdes-bye pj-bool)
+  (on-aud-prev-play-frame :pointer)
+  (on-aud-prev-rec-frame :pointer))
+
+(defctype pjsua-media-config (:struct pjsua-media-config))
+
 (defcfun "pjsua_call_get_info" pj-status (call-id pjsua-call-id) (info (:pointer pjsua-call-info)))
 
 (defcfun "pjsua_call_answer" pj-status (call-id pjsua-call-id) (code :uint)
 	 (reason (:pointer pj-str)) (msg-data (:pointer pjsua-msg-data)))
+
+(defcfun "pjsua_conf_connect" pj-status (source pjsua-conf-port-id) (sink pjsua-conf-port-id))
+
+(defcfun "pjsua_create" pj-status)
+
+(defcfun "pjsua_init" pj-status (ua-cfg (:pointer pjsua-config)) (log-cfg (:pointer pjsua-logging-config))
+	 (media-cfg (:pointer pjsua-media-config)))
+
+(defcfun "pjsua_destroy" :void)
+
+(defcfun "pjsua_verify_url" pj-status (c-url :string))
+
+(defcfun "pjsua_config_default" :void (cfg (:pointer pjsua-config)))
+
+(defcfun "pjsua_logging_config_default" :void (cfg (:pointer pjsua-logging-config)))
+
