@@ -9,5 +9,6 @@
   :serial t
   :components ((:file "package")
                (:file "cl-pjsip")
-	       (:file "media-ports")))
+	       (:file "media-ports")
+	       (:file "cl-pjsua")))
 
