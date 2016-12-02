@@ -19,6 +19,15 @@
     (ua-log (format nil "Incoming call from ~A!!" (pj-str-to-lisp (foreign-slot-pointer ci 'pjsua-call-info 'remote-info))))
     (pjsua-call-answer call-id 200 (null-pointer) (null-pointer))))
 
+(defcallback on-call-state :void ((call-id pjsua-call-id) (e (:pointer pjsip-event)))
+  (declare (ignorable e))
+  (with-foreign-object (ci 'pjsua-call-info)
+    (pjsua-call-get-info call-id ci)
+    (when (eql (foreign-slot-value ci 'pjsua-call-info 'media-status) :pjsua-call-media-active)
+      ;; plug the audio in
+      (pjsua-conf-connect (foreign-slot-value ci 'pjsua-call-info 'conf-slot) 0)
+      (pjsua-conf-connect 0 (foreign-slot-value ci 'pjsua-call-info 'conf-slot)))))
+
 (defun error-exit (title status)
   (pjsua-perror "cl-pjsua-demo" title status)
   (pjsua-destroy)
