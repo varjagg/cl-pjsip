@@ -1273,18 +1273,18 @@
 (defctype pjsip-buffer (:struct pjsip-buffer))
 
 (defcenum pjsip-transport-type-e
-    :pjsip_transport_unspecified
-    :pjsip_transport_udp
-    :pjsip_transport_tcp
-    :pjsip_transport_tls
-    :pjsip_transport_sctp
-    :pjsip_transport_loop
-    :pjsip_transport_loop_dgram
-    :pjsip_transport_start_other
-    (:pjsip_transport_ipv6 128)
-    :pjsip_transport_udp6
-    :pjsip_transport_tcp6
-    :pjsip_transport_tls6)
+    :pjsip-transport-unspecified
+    :pjsip-transport-udp
+    :pjsip-transport-tcp
+    :pjsip-transport-tls
+    :pjsip-transport-sctp
+    :pjsip-transport-loop
+    :pjsip-transport-loop-dgram
+    :pjsip-transport-start-other
+    (:pjsip-transport-ipv6 128)
+    :pjsip-transport-udp6
+    :pjsip-transport-tcp6
+    :pjsip-transport-tls6)
 
 (defcstruct server-addresses-entry
   (type pjsip-transport-type-e)
