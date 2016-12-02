@@ -1685,3 +1685,7 @@
 (defcallback logger :void ((level :int) (data :string) (len :int))
   (declare (ignorable len level))
   (format t "~A" data))
+
+(defun ua-log (string)
+  (pj-log "cl-pjsip-ua.lisp" 1 string)
+  (finish-output))

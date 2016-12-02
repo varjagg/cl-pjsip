@@ -45,10 +45,6 @@
   (use-foreign-library libpjmedia-codec)
   (use-foreign-library libpjmedia-audiodev))
 
-(defun ua-log (string)
-  (pj-log "cl-pjsip-ua.lisp" 1 string)
-  (finish-output))
-
 (defcallback on-rx-request pj-bool ((rdata (:pointer pjsip-rx-data)))
   (ua-log "Handling RX request")
   (with-foreign-objects ((hostaddr 'pj-sockaddr)
