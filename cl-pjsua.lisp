@@ -79,6 +79,8 @@
   (aud-cnt :uint)
   (vid-cnt :uint))
 
+(defctype pjsua-call-setting (:struct pjsua-call-setting))
+
 (defcenum pjsua-call-media-status
   :pjsua-call-media-none
   :pjsua-call-media-active
@@ -346,6 +348,8 @@
 (defcfun "pjsua_init" pj-status (ua-cfg (:pointer pjsua-config)) (log-cfg (:pointer pjsua-logging-config))
 	 (media-cfg (:pointer pjsua-media-config)))
 
+(defcfun "pjsua_start" pj-status)
+
 (defcfun "pjsua_destroy" :void)
 
 (defcfun "pjsua_verify_url" pj-status (c-url :string))
@@ -354,3 +358,13 @@
 
 (defcfun "pjsua_logging_config_default" :void (cfg (:pointer pjsua-logging-config)))
 
+(defcfun "pjsua_transport_config_default" :void (cfg (:pointer pjsua-transport-config)))
+
+(defcfun "pjsua_acc_config_default" :void (cfg (:pointer pjsua-acc-config)))
+
+(defcfun "pjsua_acc_add" pj-status (cfg (:pointer pjsua-acc-config)) (is-default pj-bool) (p-acc-id (:pointer pjsua-acc-id)))
+
+(defcfun "pjsua_call_make_call" pj-status (acc-id pjsua-acc-id) (dest-uri (:pointer pj-str)) (opt (:pointer pjsua-call-setting))
+	 (user-data (:pointer :void)) (msg-data (:pointer pjsua-msg-data)) (p-call-id (:pointer pjsua-call-id)))
+
+(defcfun "pjsua_call_hangup_all" :void)
