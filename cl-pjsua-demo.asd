@@ -1,4 +1,4 @@
-;;;; cl-pjsip-ua.asd
+;;;; cl-pjsua-demo.asd
 
 (asdf:defsystem #:cl-pjsua-demo
   :description "A simple PJSUA based demo using CL-PJSIP library"
