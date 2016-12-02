@@ -406,6 +406,9 @@
 
 (defcfun "pjsua_transport_config_default" :void (cfg (:pointer pjsua-transport-config)))
 
+(defcfun "pjsua_transport_create" pj-status (type pjsip-transport-type-e) (cfg (:pointer pjsua-transport-config))
+	 (p-id (:pointer pjsua-transport-id)))
+
 (defcfun "pjsua_acc_config_default" :void (cfg (:pointer pjsua-acc-config)))
 
 (defcfun "pjsua_acc_add" pj-status (cfg (:pointer pjsua-acc-config)) (is-default pj-bool) (p-acc-id (:pointer pjsua-acc-id)))
