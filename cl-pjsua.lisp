@@ -276,3 +276,25 @@
   (use-stream-ka pj-bool)
   (call-hold-type pjsua-call-hold-type)
   (register-on-acc-add pj-bool))
+
+(defctype pjsua-acc-config (:struct pjsua-acc-config))
+
+(defcstruct pjsip-multipart-part
+  (list pj-list)
+  (hdr pjsip-hdr)
+  (body (:pointer pjsip-msg-body)))
+
+(defcstruct pjsua-msg-data
+  (target-uri pj-str)
+  (hdr-list pjsip-hdr)
+  (content-type pj-str)
+  (msg-body pj-str)
+  (multipart-type pjsip-media-type)
+  (multipart-parts (:struct pjsip-multipart-part)))
+
+(defctype pjsua-msg-data (:struct pjsua-msg-data))
+
+(defcfun "pjsua_call_get_info" pj-status (call-id pjsua-call-id) (info (:pointer pjsua-call-info)))
+
+(defcfun "pjsua_call_answer" pj-status (call-id pjsua-call-id) (code :uint)
+	 (reason (:pointer pj-str)) (msg-data (:pointer pjsua-msg-data)))
