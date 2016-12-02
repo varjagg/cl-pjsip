@@ -28,6 +28,7 @@
 (defcstruct pjsip-cred-info
   (realm pj-str)
   (scheme pj-str)
+  (username pj-str)
   (data-type :int)
   (data pj-str)
   (ext-aka (:struct cred-info-aka)))
