@@ -32,9 +32,6 @@
    (inv :accessor inv :initform (foreign-alloc '(:pointer pjsip-inv-session) :initial-contents (list (null-pointer))))
    (med-stream :accessor med-stream :initform (foreign-alloc '(:pointer pjmedia-snd-port) :initial-contents (list (null-pointer))))))
 
-(defun deref (var)
-  (mem-ref var :pointer))
-
 (defun load-pjsip-libraries ()
   (pushnew #p"/usr/local/lib" *foreign-library-directories* :test #'equalp)
   (use-foreign-library libpjlib-util)

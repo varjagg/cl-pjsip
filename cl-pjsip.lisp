@@ -1689,3 +1689,6 @@
 (defun ua-log (string)
   (pj-log "cl-pjsip-ua.lisp" 1 string)
   (finish-output))
+
+(defun deref (var)
+  (mem-ref var :pointer))
