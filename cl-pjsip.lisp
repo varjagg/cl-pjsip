@@ -29,6 +29,8 @@
 (defconstant +pj-invalid-socket+ -1)
 
 (defconstant +pj-success+ 0)
+(defconstant +pj-true+ 1)
+(defconstant +pj-false+ 0)
 
 (defconstant +pj-errno-start-status+ 70000)
 (defconstant +pj-enotsup+ (+ +pj-errno-start-status+ 12))
