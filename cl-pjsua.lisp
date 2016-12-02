@@ -32,6 +32,8 @@
   (data pj-str)
   (ext-aka (:struct cred-info-aka)))
 
+(defctype pjsip-cred-info (:struct pjsip-cred-info))
+
 (defcenum pjmedia-srtp-use
   :pjmedia-srtp-disabled
   :pjmedia-srtp-optional
