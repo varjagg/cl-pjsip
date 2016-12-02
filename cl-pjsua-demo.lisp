@@ -12,6 +12,13 @@
        (unless (pj-success ,retval)
 	 (error-exit ,error-message ,retval)))))
 
+(defcallback on-incoming-call :void ((acc-id pjsua-acc-id) (call-id pjsua-call-id) (rdata (:pointer pjsip-rx-data)))
+  (declare (ignorable acc-id rdata))
+  (with-foreign-object (ci 'pjsua-call-info)
+    (pjsua-call-get-info call-id ci)
+    (ua-log (format nil "Incoming call from ~A!!" (pj-str-to-lisp (foreign-slot-pointer ci 'pjsua-call-info 'remote-info))))
+    (pjsua-call-answer call-id 200 (null-pointer) (null-pointer))))
+
 (defun error-exit (title status)
   (pjsua-perror "cl-pjsua-demo" title status)
   (pjsua-destroy)
