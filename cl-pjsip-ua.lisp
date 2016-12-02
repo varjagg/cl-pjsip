@@ -40,7 +40,6 @@
   (use-foreign-library libpjlib-util)
   (use-foreign-library libpj)
   (use-foreign-library libpjsip)
-  (use-foreign-library libpjsua)
   (use-foreign-library libpjsip-ua)
   (use-foreign-library libpjmedia)
   (use-foreign-library libpjmedia-codec)
@@ -329,4 +328,3 @@
     (pj-log-pop-indent))
   (setf *complete* nil)
   t)
-
