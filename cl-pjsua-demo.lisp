@@ -39,7 +39,7 @@
   (throw 'demo-error nil))
 
 (defun run-pjsua (&optional destination)
-  (with-foreign-object (acc-id 'pjsua-acc-id)
+  (let ((acc-id (foreign-alloc 'pjsua-acc-id)))
     (use-foreign-library libpjsua)
 
     (assert-no-error (pjsua-create))
