@@ -85,7 +85,7 @@
     (when destination
       (with-foreign-object (uri 'pj-str)
 	(pj-cstr uri destination)
-	(assert-no-error (pjsua-call-make-call (deref acc-id) uri 0 
+	(assert-no-error (pjsua-call-make-call (mem-ref acc-id 'pjsua-acc-id) uri 0 
 						(null-pointer) (null-pointer) (null-pointer))
 			 "Error making call")))
 
@@ -98,4 +98,5 @@
     (pjsua-destroy)
 
     (catch 'demo-error
+      (foreign-free acc-id)
       #+nil(ua-log "Exiting"))))
