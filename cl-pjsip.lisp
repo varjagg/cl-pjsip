@@ -1500,6 +1500,12 @@
 
 (defctype pj-stun-auth-cred (:struct pj-stun-auth-cred))
 
+(defcstruct pjmedia-vid-stream-sk-config
+  (count :uint)
+  (interval :uint))
+
+(defctype pjmedia-vid-stream-sk-config (:struct pjmedia-vid-stream-sk-config))
+
 (defcvar "PJ_AF_INET" pj-uint16)
 
 (defcfun "pj_str" (:pointer pj-str) (str :string))
