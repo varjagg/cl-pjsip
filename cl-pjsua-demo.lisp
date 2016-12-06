@@ -4,6 +4,8 @@
 (defvar *sip-user* "alice")
 (defvar *sip-passwd* "secret")
 
+(defconstant +pjsip-cred-data-plain-passwd+ 0)
+
 (defmacro assert-no-error (form &optional error-message)
   (let ((retval (gentemp)))
     (unless error-message
@@ -78,7 +80,7 @@
 	  (pj-cstr realm *sip-domain*)
 	  (pj-cstr scheme "digest")
 	  (pj-cstr username *sip-user*)
-	  (setf data-type :pjsip-cred-data-plain-passwd)
+	  (setf data-type +pjsip-cred-data-plain-passwd+)
 	  (pj-cstr data *sip-passwd*)
 	  (assert-no-error (pjsua-acc-add cfg +pj-true+ acc-id) "Error adding account"))))
 
