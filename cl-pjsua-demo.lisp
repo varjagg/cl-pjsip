@@ -68,11 +68,13 @@
       (setf (foreign-slot-value cfg 'pjsua-transport-config 'port) 5060)
       (assert-no-error (pjsua-transport-create :pjsip-transport-udp cfg (null-pointer)) "Error creating transport"))
   
+    (assert-no-error (pjsua-start) "Error starting pjsua")
+
     (with-foreign-object (cfg 'pjsua-acc-config)
       (pjsua-acc-config-default cfg)
       (with-foreign-slots ((id reg-uri cred-count) cfg pjsua-acc-config)
 	(pj-cstr id (format nil "sip:~A@~A" *sip-user* *sip-domain*))
-	(pj-cstr reg-uri (format nil "sip:~A" *sip-domain*))
+	;;(pj-cstr reg-uri (format nil "sip:~A" *sip-domain*))
 	(setf cred-count 1)
 	(with-foreign-slots ((realm scheme username data-type data)
 			     (mem-aptr (foreign-slot-pointer cfg 'pjsua-acc-config 'cred-info) 'pjsip-cred-info 0)
