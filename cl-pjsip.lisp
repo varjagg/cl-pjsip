@@ -1448,7 +1448,7 @@
   (ciphers-num :uint)
   (ciphers :pointer) ;dangling
   (verify-server pj-bool)
-  (verify-clien pj-bool)
+  (verify-client pj-bool)
   (require-client-cert pj-bool)
   (timeout pj-time-val)
   (reuse-addr pj-bool)
