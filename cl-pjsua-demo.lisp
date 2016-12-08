@@ -1,7 +1,7 @@
 (in-package #:cl-pjsip)
 
-(defvar *sip-domain* "example.com")
-(defvar *sip-user* "alice")
+(defvar *sip-domain* "10.0.14.3")
+(defvar *sip-user* "1100")
 (defvar *sip-passwd* "secret")
 
 (defconstant +pjsip-cred-data-plain-passwd+ 0)
@@ -25,7 +25,7 @@
   (declare (ignorable e))
   (with-foreign-object (ci 'pjsua-call-info)
     (pjsua-call-get-info call-id ci)
-    (ua-log (format nil "Call ~D state=~A" call-id (foreign-slot-value ci 'pjsua-call-info 'state)))))
+    (format t "Call ~D state=~A~%" call-id (foreign-slot-value ci 'pjsua-call-info 'state))))
 
 (defcallback on-call-media-state :void ((call-id pjsua-call-id))
   (with-foreign-object (ci 'pjsua-call-info)
