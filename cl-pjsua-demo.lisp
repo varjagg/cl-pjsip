@@ -95,7 +95,8 @@
 
     (loop for banner = (format t "Press H to hang up all calls, Q to quit~%")
        for option = (read-line)
-       when (eql (char-downcase (aref option 0)) #\q) return nil
+       when (zerop (length option)) do (terpri)
+       else when (eql (char-downcase (aref option 0)) #\q) return nil
        else when (eql (char-downcase (aref option 0)) #\h) do
 	 (pjsua-call-hangup-all))
     
