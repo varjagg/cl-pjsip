@@ -4,6 +4,7 @@
   :description "A simple PJSUA based demo using CL-PJSIP library"
   :author "Eugene Zaikonnikov <eugene@funcall.org>"
   :license "GPL v2"
+  :version "0.1"
   :depends-on (#:cl-pjsip)
   :serial t
   :components ((:file "cl-pjsua-demo")))
