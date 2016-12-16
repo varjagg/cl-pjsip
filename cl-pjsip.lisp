@@ -46,6 +46,8 @@
 
 (defctype pj-size size)
 
+(defctype pj-ssize :long)
+
 (defctype pj-bool :boolean)
 
 (defctype pj-int32 :int)
