@@ -93,6 +93,10 @@
 (defcfun "pjmedia_wav_player_port_create" pj-status (pool (:pointer pj-pool)) (filename :string) (ptime :uint) (options :uint)
 	 (buff-size pj-ssize) (p-port (:pointer (:pointer pjmedia-port))))
 
+(defcfun "pjmedia_wav_writer_port_create" pj-status (pool (:pointer pj-pool)) (filename :string) (sampling-rate :uint)
+	 (channel-count :uint) (samples-per-frame :uint) (bits-per-sample :uint) (flags :uint)
+	 (buff-size pj-ssize) (p-port (:pointer (:pointer pjmedia-port))))
+
 (defcfun "pjmedia_master_port_create" pj-status (pool (:pointer pj-pool)) (u-port (:pointer pjmedia-port)) 
 	(d-port (:pointer pjmedia-port)) (options :uint) (p-m (:pointer (:pointer pjmedia-master-port))))
 
