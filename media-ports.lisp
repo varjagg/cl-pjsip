@@ -160,3 +160,13 @@
 		      :pjmedia-format-detail-audio)))
     (pjmedia-afd-spf (foreign-slot-pointer (foreign-slot-pointer fmt 'pjmedia-format 'det)
 						  '(:union format-det) 'aud))))
+
+(defun pjmedia-pia-time (pia)
+  (let ((fmt (foreign-slot-pointer pia 'pjmedia-port-info 'fmt)))
+    (assert (and (eql (foreign-slot-value fmt 'pjmedia-format 'type) :pjmedia-type-audio)
+		 (eql (foreign-slot-value fmt 'pjmedia-format 'detail-type)
+		      :pjmedia-format-detail-audio)))
+    (round (foreign-slot-value (foreign-slot-pointer (foreign-slot-pointer fmt 'pjmedia-format 'det)
+						     '(:union format-det) 'aud)
+			       'pjmedia-audio-format-detail 'frame-time-usec)
+	   1000)))
