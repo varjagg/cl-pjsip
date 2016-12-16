@@ -79,6 +79,17 @@
 
 (defctype pjmedia-snd-port (:struct pjmedia-snd-port))
 
+(defcstruct pjmedia-master-port
+  (options :uint)
+  (clock :pointer) ;dangling
+  (u-port (:pointer pjmedia-port))
+  (d-port (:pointer pjmedia-port))
+  (buff-size :uint)
+  (buff (:pointer :void))
+  (lock :pointer))
+
+(defctype pjmedia-master-port (:struct pjmedia-master-port))
+
 (defcfun "pjmedia_aud_subsys_init" pj-status (pf (:pointer pj-pool-factory)))
 
 (defcfun "pjmedia_aud_subsys_shutdown" :void)
