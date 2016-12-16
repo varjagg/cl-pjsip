@@ -90,6 +90,18 @@
 
 (defctype pjmedia-master-port (:struct pjmedia-master-port))
 
+(defcfun "pjmedia_wav_player_port_create" pj-status (pool (:pointer pj-pool)) (filename :string) (ptime :uint) (options :uint)
+	 (buff-size pj-ssize) (p-port (:pointer (:pointer pjmedia-port))))
+
+(defcfun "pjmedia_master_port_create" pj-status (pool (:pointer pj-pool)) (u-port (:pointer pjmedia-port)) 
+	(d-port (:pointer pjmedia-port)) (options :uint) (p-m (:pointer (:pointer pjmedia-master-port))))
+
+(defcfun "pjmedia_master_port_start" pj-status (m (:pointer pjmedia-master-port)))
+
+(defcfun "pjmedia_master_port_stop" pj-status (m (:pointer pjmedia-master-port)))
+
+(defcfun "pjmedia_master_port_destroy" pj-status (m (:pointer pjmedia-master-port)) (destroy-ports pj-bool))
+
 (defcfun "pjmedia_aud_subsys_init" pj-status (pf (:pointer pj-pool-factory)))
 
 (defcfun "pjmedia_aud_subsys_shutdown" :void)
