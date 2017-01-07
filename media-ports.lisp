@@ -118,6 +118,8 @@
 
 (defcfun "pjmedia_snd_port_destroy" :void (snd-port (:pointer pjmedia-snd-port)))
 
+(defcfun "pjmedia_port_destroy" pj-status (port (:pointer pjmedia-port)))
+
 (defun pjmedia-pia-srate (pia)
   (let ((fmt (foreign-slot-pointer pia 'pjmedia-port-info 'fmt)))
     (assert (and (eql (foreign-slot-value fmt 'pjmedia-format 'type) :pjmedia-type-audio)
