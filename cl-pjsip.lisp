@@ -35,6 +35,19 @@
 (defconstant +pj-errno-start-status+ 70000)
 (defconstant +pj-enotsup+ (+ +pj-errno-start-status+ 12))
 
+(defconstant +pj-max-obj-name+ 32)
+(defconstant +pj-caching-pool-array-size+ 16)
+(defconstant +pool-buf-size+ 512) ;256 * sizeof(size_t) / 4
+(defconstant +pjmedia-codec-mgr-max-codecs+ 32)
+(defconstant +pjsip-max-module+ 32)
+(defconstant +max-threads+ 16)
+(defconstant +pjsip-max-pkt-len+ 4000)
+(defconstant +pj-inet6-addrstrlen+ 46)
+(defconstant +pjsip-generic-array-max-count+ 32)
+(defconstant +pjmedia-format-detail-user-size+ 1)
+(defconstant +pjsip-max-resolved-addresses+ 8)
+(defconstant +pj-max-sockopt-params+ 4)
+
 (defmacro assert-success (expr)
   `(assert (= ,expr +pj-success+)))
 
@@ -153,7 +166,7 @@
 
 (defcstruct pj-pool
   (list pj-list)
-  (obj-name :char :count 32) ;PJ_MAX_OBJ_NAME
+  (obj-name :char :count #.+pj-max-obj-name+)
   (factory (:pointer pj-pool-factory))
   (factory-data (:pointer :void))
   (capacity pj-size)
@@ -170,9 +183,9 @@
   (used-count pj-size)
   (used-size pj-size)
   (peak-used-size pj-size)
-  (free-list (:struct pj-list) :count 16) ;PJ_CACHING_POOL_ARRAY_SIZE
+  (free-list (:struct pj-list) :count #.+pj-caching-pool-array-size+)
   (used-list (:struct pj-list))
-  (pool-buf :char :count 512) ;256 * sizeof(size_t) / 4
+  (pool-buf :char :count #.+pool-buf-size+) 
   (lock :pointer))
 
 (defctype pj-caching-pool (:struct pj-caching-pool))
@@ -411,7 +424,7 @@
 
 (defcstruct pjmedia-codec-desc
   (info (:struct pjmedia-codec-info))
-  (id :char :count 32)
+  (id :char :count #.+pj-max-obj-name+)
   (prio pjmedia-codec-priority)
   (factory (:pointer (:struct pjmedia-codec-factory)))
   (param :pointer)) ;dangling
@@ -424,7 +437,7 @@
   (mutex :pointer) ;dangling
   (factory-list (:struct pjmedia-codec-factory))
   (codec-cnt :uint)
-  (codec-desc (:struct pjmedia-codec-desc) :count 32)) ;PJMEDIA_CODEC_MGR_MAX_CODECS
+  (codec-desc (:struct pjmedia-codec-desc) :count #.+pjmedia-codec-mgr-max-codecs+))
 
 (defctype pjmedia-codec-mgr (:struct pjmedia-codec-mgr))
 
@@ -445,7 +458,7 @@
   (ioq-last-err pj-status)
   (resolver :pointer) ;dangling
   (mod-mutex :pointer) ;dangling
-  (modules (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
+  (modules (:pointer (:struct pjsip-module)) :count #.+pjsip-max-module+)
   (module-list (:struct pjsip-module))
   (cap-hdr (:struct pjsip-hdr))
   (req-hdr (:struct pjsip-hdr))
@@ -454,7 +467,7 @@
 (defctype pjsip-endpoint (:struct pjsip-endpoint))
 
 (defcstruct pjsip-transport
-  (obj-name :char :count 32) ;MAX_OBJ_NAME
+  (obj-name :char :count #.+pj-max-obj-name+)
   (pool (:pointer pj-pool))
   (ref-cnt :pointer) ;dangling
   (lock :pointer) ;dangling
@@ -497,7 +510,7 @@
   (ioqueue :pointer) ;dangling
   (own-ioqueue pj-bool)
   (thread-cnt :uint)
-  (thread :pointer :count 16) ;MAX_THREADS
+  (thread :pointer :count #.+max-threads+)
   (quit-flag pj-bool)
   (has-telephone-event pj-bool)
   (exit-cb-list (:struct exit-cb)))
@@ -528,7 +541,7 @@
 (defctype pjmedia-transport-op (:struct pjmedia-transport-op))
 
 (defcstruct pjmedia-transport
-  (name :char :count 32)
+  (name :char :count #.+pj-max-obj-name+)
   (type pjmedia-transport-type)
   (op (:pointer (:struct pjmedia-transport-op)))
   (user-data (:pointer :void)))
@@ -815,7 +828,7 @@
   ;;pj-list really via c macrology originally
   (prev (:pointer :void))
   (next (:pointer :void))
-  (obj-name :char :count 32)
+  (obj-name :char :count #.+pj-max-obj-name+)
   (pool (:pointer (:struct pj-pool)))
   (mutex :pointer) ;dangling
   (ua (:pointer pjsip-user-agent))
@@ -840,8 +853,8 @@
   (tsx-count :int)
   (tpsel (:struct pjsip-tpselector))
   (usage-cnt :uint)
-  (usage (:pointer (:struct pjsip-module)) :count 32) ;PJSIP_MAX_MODULE
-  (mod-data (:pointer :void) :count 32)
+  (usage (:pointer (:struct pjsip-module)) :count #.+pjsip-max-module+)
+  (mod-data (:pointer :void) :count #.+pjsip-max-module+)
   (via-addr (:struct pjsip-host-port))
   (via-tp (:pointer :void)))
 
@@ -891,7 +904,7 @@
     :pjsip-inv-state-disconnected)
 
 (defcstruct (pjsip-inv-session :conc-name inv-session-)
-  (obj-name :char :count 32) ;PJ_MAX_OBJECT_NAME
+  (obj-name :char :count #.+pj-max-obj-name+)
   (pool (:pointer (:struct pj-pool)))
   (pool-prov (:pointer (:struct pj-pool)))
   (pool-active (:pointer (:struct pj-pool)))
@@ -913,7 +926,7 @@
   (last-answer :pointer) ;dangling
   (last-ack :pointer) ;dangling
   (last-ack-cseq pj-int32)
-  (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
+  (mod-data (:pointer :void) :count #.+pjsip-max-module+)
   (timer :pointer) ;dangling
   (following-fork pj-bool)
   (ref-cnt :pointer);dangling
@@ -944,12 +957,12 @@
 
 (defcstruct rx-data-pkt-info
   (timestamp (:struct pj-time-val))
-  (packet :char :count 4000) ;PJSIP_MAX_PKT_LEN
+  (packet :char :count #.+pjsip-max-pkt-len+)
   (zero pj-uint32)
   (len size)
   (src-addr (:union pj-sockaddr))
   (src-addr-len :int)
-  (src-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
+  (src-name :char :count #.+pj-inet6-addrstrlen+)
   (src-port :int))
 
 (defctype rx-data-pkt-info (:struct rx-data-pkt-info))
@@ -1054,7 +1067,7 @@
 (defcstruct pjsip-generic-array-hdr
   (hdr (:struct pjsip-hdr))
   (count :uint)
-  (values pj-str :count 32)) ;PJSIP_GENERIC_ARRAY_MAX_COUNT
+  (values pj-str :count #.+pjsip-generic-array-max-count+))
 
 (defctype pjsip-generic-array-hdr (:struct pjsip-generic-array-hdr))
 (defctype pjsip-require-hdr (:struct pjsip-generic-array-hdr))
@@ -1091,7 +1104,7 @@
 (defctype rx-data-msg-info (:struct rx-data-msg-info))
 
 (defcstruct rx-data-endpt-info
-  (mod-data (:pointer :void) :count 32)) ;PJSIP_MAX_MODULE
+  (mod-data (:pointer :void) :count #.+pjsip-max-module+))
 
 (defctype rx-data-endpt-info (:struct rx-data-endpt-info))
 
@@ -1224,7 +1237,7 @@
 (defcunion format-det
   (aud (:struct pjmedia-audio-format-detail))
   (vid (:struct pjmedia-video-format-detail))
-  (user :char :count 1)) ;PJMEDIA_FORMAT_DETAIL_USER_SIZE
+  (user :char :count #.+pjmedia-format-detail-user-size+))
 
 (defcstruct pjmedia-format
   (id pj-uint32)
@@ -1297,7 +1310,7 @@
 
 (defcstruct pjsip-server-addresses
   (count :uint)
-  (entry (:struct server-addresses-entry) :count 8)) ;PJSIP_MAX_RESOLVED_ADDRESSES
+  (entry (:struct server-addresses-entry) :count #.+pjsip-max-resolved-addresses+))
 
 (defctype pjsip-server-addresses (:struct pjsip-server-addresses))
 
@@ -1310,13 +1323,13 @@
   (transport (:pointer (:struct pjsip-transport)))
   (dst-addr (:union pj-sockaddr))
   (dst-addr-len :int)
-  (dst-name :char :count 46) ;PJ_INET6_ADDRSTRLEN
+  (dst-name :char :count #.+pj-inet6-addrstrlen+)
   (dst-port :int))
 
 (defcstruct (pjsip-tx-data :conc-name pjsip-tx-data-)
   (list (:struct pj-list))
   (pool (:pointer (:struct pj-pool)))
-  (obj-name :char :count 32) ;MAX_OBJ_NAME
+  (obj-name :char :count #.+pj-max-obj-name+)
   (info :string)
   (rx-timestamp (:struct pj-time-val))
   (mgr :pointer) ; dangling transport manager
@@ -1333,7 +1346,7 @@
   (tp-info (:struct tx-data-tp-info))
   (tp-sel (:struct pjsip-tpselector))
   (auth-retry pj-bool)
-  (mod-data (:pointer :void) :count 32) ;PJSIP_MAX_MODULE
+  (mod-data (:pointer :void) :count #.+pjsip-max-module+)
   (via-addr (:struct pjsip-host-port))
   (via-tp (:pointer :void)))
 
@@ -1435,7 +1448,7 @@
 
 (defcstruct pj-sockopt-params
   (cnt :uint)
-  (options (:struct sockopt-params-options) :count 4)) ;PJ_MAX_SOCKOPT_PARAMS
+  (options (:struct sockopt-params-options) :count #.+pj-max-sockopt-params+))
 
 (defctype pj-sockopt-params (:struct pj-sockopt-params))
 
