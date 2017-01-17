@@ -1662,6 +1662,10 @@
 
 (defcfun "pjsip_tx_data_get_info" (:pointer :char) (tdata (:pointer pjsip-tx-data)))
 
+pjsip_dialog * 	 (pjsip_rx_data *rdata)
+
+(defcfun "pjsip_rdata_get_dlg" (:pointer pjsip-dialog) (rdata (:pointer pjsip-rx-data)))
+
 ;;; Implementing these as PJSIP guys made them inlined in C..
 (defun pjmedia-endpt-create (pf ioqueue worker-cnt p-endpt)
   (if (pj-success (pjmedia-aud-subsys-init pf))
