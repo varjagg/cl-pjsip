@@ -1731,3 +1731,9 @@
 
 (defun deref (var)
   (mem-ref var :pointer))
+
+(defun pjsip-uri-print (context uri)
+  (with-foreign-object (buffer :char 256) 
+    (foreign-funcall-pointer (foreign-slot-value uri 'pjsip-uri-vptr 'cl-pjsip::p-print) ()
+			     pjsip-uri-context-e context :pointer uri (:pointer :char) buffer :int 256 :int)
+    (foreign-string-to-lisp buffer)))
