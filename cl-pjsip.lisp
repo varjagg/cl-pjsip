@@ -580,8 +580,24 @@
   :pjsip-dialog-state-null
   :pjsip-dialog-state-established)
 
+(defcenum pjsip-uri-context-e
+  :pjsip-uri-in-req-uri
+  :pjsip-uri-fromto-hdr
+  :pjsip-uri-in-contact-hdr
+  :pjsip-uri-in-routing-hdr
+  :pjsip-uri-other)
+
+(defcstruct pjsip-uri-vptr
+  (p-get-scheme :pointer)
+  (p-get-uri :pointer)
+  (p-print :pointer)
+  (p-compare :pointer)
+  (p-clone :pointer))
+
+(defctype pjsip-uri-vptr (:struct pjsip-uri-vptr))
+
 (defcstruct pjsip-uri
-  (vptr :pointer))
+  (vptr (:pointer pjsip-uri-vptr)))
 
 (defctype pjsip-uri (:struct pjsip-uri))
 
