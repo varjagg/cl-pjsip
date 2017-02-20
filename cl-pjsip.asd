@@ -4,7 +4,7 @@
   :description "Common Lisp wrapper for PJSIP library"
   :author "Eugene Zaikonnikov <eugene@funcall.org>"
   :license "GPL v2"
-  :version "0.3"
+  :version "0.4"
   :depends-on (#:cffi #:cffi-libffi)
   :serial t
   :components ((:file "package")
